@@ -7,15 +7,14 @@ use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Core\Services\UrlService;
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Core\AbstractInjectable;
-use VitesseCms\Core\Models\Datafield;
-use VitesseCms\Core\Models\Datagroup;
+use VitesseCms\Database\Models\FindValue;
+use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Forms\ExportTypeForm;
-use VitesseCms\Export\Interfaces\AbstractExportHelperInterface;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Form\Helpers\ElementHelper;
+use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Language\Models\Language;
-use Phalcon\Di;
-use DateTime;
 
 abstract class AbstractExportHelper extends AbstractInjectable implements AbstractExportHelperInterface
 {
@@ -49,10 +48,17 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
      */
     protected $exportType;
 
-    public function __construct()
+    /**
+     * @var RepositoryInterface
+     */
+    protected $repositories;
+
+    public function __construct(Language $language, RepositoryInterface $repositories)
     {
         $this->fields = [];
         $this->items = [];
+        $this->repositories = $repositories;
+        $this->language = $language;
     }
 
     public function setFields(array $fields): void
@@ -65,60 +71,40 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
         $this->items = $items;
     }
 
-    public function setLanguage(Language $language): void
-    {
-        $this->language = $language;
-    }
-
     public function setHeaders(): void
     {
     }
 
     public static function buildAdminForm(
         ExportTypeForm $form,
-        ExportType $item
+        ExportType $item,
+        RepositoryInterface $repositories
     ): void {
         if (
-            $item->_('datagroup')
-            && count($item->_('type')::$adminFormFields) > 0
+            $item->getDatagroup() !== ''
+            && count($item->getType()::$adminFormFields) > 0
         ) :
             $datafieldOptions = [];
-            $datagroup = Datagroup::findById($item->_('datagroup'));
-            foreach ($datagroup->_('datafields') as $datafieldSet) :
+            $datagroup =  $repositories->datagroup->getById($item->_('datagroup'));
+            foreach ($datagroup->getDatafields() as $datafieldSet) :
                 if ($datafieldSet['published'] === true) :
-                    $datafield = Datafield::findById($datafieldSet['id']);
-                    if ($datafield) :
-                        $datafieldOptions[$datafield->_('calling_name')] = $datafield->_('name');
+                    $datafield = $repositories->datafield->getById($datafieldSet['id']);
+                    if ($datafield !== null) :
+                        $datafieldOptions[$datafield->getCallingName()] = $datafield->getNameField();
                     endif;
                 endif;
             endforeach;
 
-            $form->_(
-                'html',
-                'html',
-                'html',
-                [
-                    'html' => '<p><br/><b>Match Exportfields with custom text or a DataField</b></p>',
-                ]
-            );
+            $form->addHtml('<p><br/><b>Match Exportfields with custom text or a DataField</b></p>');
             foreach ($item->_('type')::$adminFormFields as $exportField) :
-                $form->_(
-                    'select',
-                    '%ADMIN_DATAFIELD% '.ucfirst($exportField),
-                    'exportDatafield_'.$exportField,
-                    [
-                        'options'    => ElementHelper::arrayToSelectOptions($datafieldOptions),
-                        'inputClass' => 'select2',
-                    ]
-                );
-
-                $form->_(
-                    'text',
+                $form->addDropdown(
+                    '%ADMIN_DATAFIELD% ' . ucfirst($exportField),
+                    'exportDatafield_' . $exportField,
+                    (new Attributes())->setInputClass('select2')->setOptions(ElementHelper::arrayToSelectOptions($datafieldOptions))
+                )->addText(
                     '%CORE_OR%',
-                    'exportField_'.$exportField,
-                    [
-                        'multilang' => true,
-                    ]
+                    'exportField_' . $exportField,
+                    (new Attributes())->setMultilang(true)
                 );
             endforeach;
         endif;
@@ -135,16 +121,17 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
 
     protected function getItemValue(AbstractCollection $item, string $fieldName): string
     {
-        if (\get_class($item) === Item::class && !empty($item->_($fieldName))) :
-            Datafield::setFindValue('calling_name', $fieldName);
-            $datafield = Datafield::findFirst();
-            if ($datafield && $datafield->_('type') === 'FieldModel') :
+        if (get_class($item) === Item::class && !empty($item->_($fieldName))) :
+            $datafield = $this->repositories->datafield->findFirst(
+                new FindValueIterator([new FindValue('calling_name', $fieldName)])
+            );
+            if ($datafield && $datafield->getFieldType() === 'FieldModel') :
                 /** @var AbstractCollection $className */
-                $className = $datafield->_('model');
+                $className = $datafield->getModel();
                 /** @var AbstractCollection $model */
                 $model = $className::findById($item->_($fieldName));
 
-                return $model->_('name', $this->language->_('short'));
+                return $model->getNameField($this->language->getShortCode());
             endif;
         endif;
 
@@ -153,17 +140,17 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
             return $return['name'][$this->language->_('short')];
         endif;
 
-        return (string) $return;
+        return (string)$return;
     }
 
     protected function getFilename(string $extension): string
     {
-        return (new DateTime())->format('Y-m-d-H-i-s').
-            '_'.
-            'item'.
-            '_'.
-            Di::getDefault()->get('configuration')->getLanguageLocale().
-            '.'.$extension;
+        return (new \DateTime())->format('Y-m-d-H-i-s') .
+            '_' .
+            'item' .
+            '_' .
+            $this->language->getLocale() .
+            '.' . $extension;
     }
 
     public function createOutputByIterator(ItemIterator $itemIterator, ExportType $exportType, UrlService $url): string

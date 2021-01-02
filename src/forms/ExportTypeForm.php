@@ -4,6 +4,9 @@ namespace VitesseCms\Export\Forms;
 
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Core\Models\Datagroup;
+use VitesseCms\Database\Interfaces\BaseCollectionInterface;
+use VitesseCms\Database\Models\FindValue;
+use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Helpers\AmazonExportHelper;
 use VitesseCms\Export\Helpers\BeslistExportHelper;
 use VitesseCms\Export\Helpers\EtsyExportHelper;
@@ -12,101 +15,110 @@ use VitesseCms\Export\Helpers\GoogleShoppingExportHelper;
 use VitesseCms\Export\Helpers\RssExportHelper;
 use VitesseCms\Export\Helpers\SitemapExportHelper;
 use VitesseCms\Export\Helpers\TradetrackerExportHelper;
-use VitesseCms\Export\Interfaces\AbstractExportHelperInterface;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoryInterface;
+use VitesseCms\Form\AbstractFormWithRepository;
 use VitesseCms\Form\Helpers\ElementHelper;
 use VitesseCms\Form\AbstractForm;
+use VitesseCms\Form\Interfaces\FormWithRepositoryInterface;
+use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Language\Models\Language;
 
-class ExportTypeForm extends AbstractForm
+class ExportTypeForm extends AbstractFormWithRepository
 {
+    /**
+     * @var RepositoryInterface
+     */
+    protected $repositories;
 
-    public function initialize(ExportType $item): void
+    /**
+     * @var ExportType
+     */
+    protected $item;
+
+    public function buildForm(): FormWithRepositoryInterface
     {
-        $this->_(
-            'text',
-            '%CORE_NAME%',
-            'name',
-            [
-                'required' => 'required',
-            ]
-        )->_(
-            'select',
+        $this->addText('%CORE_NAME%', 'name', (new Attributes())->setRequired(true))
+            ->addDropdown(
             '%ADMIN_DATAGROUP%',
             'datagroup',
-            [
-                'options' => ElementHelper::arrayToSelectOptions(Datagroup::findAll()),
-            ]
+            (new Attributes())->setOptions(ElementHelper::modelIteratorToOptions(
+                $this->repositories->datagroup->findAll()
+            ))
         );
 
-        if ($item->_('datagroup')) :
-            Item::setFindValue('datagroup', $item->_('datagroup'));
-            $items = Item::findAll();
-            $this->_(
-                'select',
+        if ($this->item->getDatagroup() !== '') :
+            $items = $this->repositories->item->findAll(new FindValueIterator(
+                [new FindValue('datagroup', $this->item->getDatagroup())]
+            ));
+            $this->addDropdown(
                 '%EXPORT_INCLUDE_CHILDREN_FROM_ITEM%',
                 'getChildrenFrom',
-                [
-                    'options' => ElementHelper::arrayToSelectOptions($items),
-                ]
+                (new Attributes())->setOptions(ElementHelper::modelIteratorToOptions($items))
             );
         endif;
 
-        $this->_(
-            'select',
+        $this->addDropdown(
             '%EXPORT_TYPE%',
             'type',
-            [
-                'required' => 'required',
-                'options'  => ElementHelper::arrayToSelectOptions([
-                    SitemapExportHelper::class          => '%EXPORT_TYPE_SITEMAP%',
-                    GoogleShoppingExportHelper::class   => '%EXPORT_TYPE_GOOGLE_SHOPPING%',
-                    TradetrackerExportHelper::class     => '%EXPORT_TYPE_TRADETRACKER%',
-                    BeslistExportHelper::class          => '%EXPORT_TYPE_BESLIST%',
-                    FacebookProductsExportHelper::class => '%EXPORT_TYPE_FACEBOOKPRODUCTS%',
-                    RssExportHelper::class              => '%EXPORT_TYPE_RSS%',
-                    EtsyExportHelper::class             => '%EXPORT_TYPE_ETSY%',
-                    AmazonExportHelper::class           => '%EXPORT_TYPE_AMAZON%',
-                ]),
-            ]
-        )->_(
-            'select',
+            (new Attributes())
+                ->setRequired(true)
+                ->setOptions(
+                    ElementHelper::arrayToSelectOptions([
+                        SitemapExportHelper::class          => '%EXPORT_TYPE_SITEMAP%',
+                        GoogleShoppingExportHelper::class   => '%EXPORT_TYPE_GOOGLE_SHOPPING%',
+                        TradetrackerExportHelper::class     => '%EXPORT_TYPE_TRADETRACKER%',
+                        BeslistExportHelper::class          => '%EXPORT_TYPE_BESLIST%',
+                        FacebookProductsExportHelper::class => '%EXPORT_TYPE_FACEBOOKPRODUCTS%',
+                        RssExportHelper::class              => '%EXPORT_TYPE_RSS%',
+                        EtsyExportHelper::class             => '%EXPORT_TYPE_ETSY%',
+                        AmazonExportHelper::class           => '%EXPORT_TYPE_AMAZON%',
+                    ]
+                )
+            )
+        )->addDropdown(
             'Caching time',
             'cachingTime',
-            [
-                'required' => 'required',
-                'options'  => ElementHelper::arrayToSelectOptions([
+            (new Attributes())
+                ->setRequired(true)
+                ->setOptions(ElementHelper::arrayToSelectOptions([
                     'none'   => 'None',
                     '-1 day'   => '1 day',
                     '-1 week'  => '1 week',
                     '-2 weeks' => '2 weeks',
                     '-3 weeks' => '3 weeks',
                     '-1 month' => '1 month',
-                ]),
-            ]
+                ])
+            )
         );
 
-        if ($item !== null && $item->hasType()) :
-            $object = $item->getTypeClass();
-            $object::buildAdminForm($this, $item);
+        if ($this->item !== null && $this->item->hasType()) :
+            //TODO move to listener
+            $object = $this->item->getTypeClass();
+            $object::buildAdminForm($this, $this->item, $this->repositories);
         endif;
 
-        if ($item->getId()) :
-            $html = '<ul>';
-            foreach (Language::findAll() as $language) :
-                $html .= '<li><a 
-                        href="'.$language->_('domain').'/export/index/index/'.$item->getId().'" 
-                        target="_blank"
-                    >'.
-                    $language->_('domain').
-                    '</a>
-                </li>';
-            endforeach;
-            $html .= '</ul>';
-
-            $this->_('html', 'html', 'html', ['html' => $html]);
+        if ($this->item->getId()) :
+            $languages = $this->repositories->language->findAll();
+            if($languages->count() > 0 ) :
+                $this->addHtml(
+                    $this->view->renderTemplate(
+                        'export_type_form_index_list',
+                        $this->configuration->getVendorNameDir().'export/src/resources/views/admin/',
+                        ['languages' => $languages]
+                    )
+                );
+            endif;
         endif;
 
-        $this->_('submit', '%CORE_SAVE%');
+        $this->addSubmitButton('%CORE_SAVE%');
+
+        return $this;
+    }
+
+    public function setEntity($entity) {
+        $this->item = $entity;
+
+        parent::setEntity($entity);
     }
 }

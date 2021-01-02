@@ -1,47 +1,42 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace VitesseCms\Export\Forms;
 
-use VitesseCms\Core\Models\Datagroup;
+use VitesseCms\Export\Repositories\RepositoriesInterface;
+use VitesseCms\Form\AbstractFormWithRepository;
 use VitesseCms\Form\Helpers\ElementHelper;
-use VitesseCms\Language\Models\Language;
-use VitesseCms\Form\AbstractForm;
+use VitesseCms\Form\Interfaces\FormWithRepositoryInterface;
+use VitesseCms\Form\Models\Attributes;
 
-/**
- * Class DataGroupForm
- */
-class DataGroupForm extends AbstractForm
+class DataGroupForm extends AbstractFormWithRepository
 {
+    /**
+     * @var RepositoriesInterface
+     */
+    protected $repositories;
 
-    public function initialize()
+    public function buildForm(): FormWithRepositoryInterface
     {
-        Datagroup::setFindPublished(false);
-        $this->_(
-            'select',
+        $this->addDropdown(
             '%ADMIN_DATAGROUP%',
             'datagroup',
-            [
-                'required' => 'required',
-                'options'  => ElementHelper::arrayToSelectOptions(Datagroup::findAll()),
-                'inputClass' => 'select2'
-            ]
-        );
-
-        Language::setFindPublished(false);
-        $this->_(
-            'select',
+            (new Attributes())
+                ->setRequired(true)
+                ->setInputClass('select2')
+                ->setOptions(ElementHelper::modelIteratorToOptions(
+                    $this->repositories->datagroup->findAll(null, false)
+                ))
+        )->addDropdown(
             '%ADMIN_LANGUAGE%',
             'language',
-            [
-                'required' => 'required',
-                'options'  => ElementHelper::arrayToSelectOptions(Language::findAll()),
-                'inputClass' => 'select2',
-            ]
-        );
+            (new Attributes())
+                ->setRequired(true)
+                ->setInputClass('select2')
+                ->setOptions(ElementHelper::modelIteratorToOptions(
+                    $this->repositories->language->findAll(null, false)
+                ))
+        )->addSubmitButton('%CORE_SAVE%');
 
-        $this->_(
-            'submit',
-            '%CORE_SAVE%'
-        );
+        return $this;
     }
 }

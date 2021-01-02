@@ -1,12 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace VitesseCms\Export\Interfaces;
+namespace VitesseCms\Export\Helpers;
 
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Core\Services\UrlService;
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Language\Models\Language;
 
 interface AbstractExportHelperInterface
@@ -14,8 +15,6 @@ interface AbstractExportHelperInterface
     public function setFields( array $fields): void;
 
     public function setItems(array $items): void;
-
-    public function setLanguage(Language $language): void;
 
     public function setHeaders(): void;
 
@@ -31,5 +30,5 @@ interface AbstractExportHelperInterface
 
     public function preFindAll(ExportType $exportType): void;
 
-    public static function buildAdminForm(ExportTypeForm $form, ExportType $item): void;
+    public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void;
 }

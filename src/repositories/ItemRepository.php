@@ -5,7 +5,7 @@ namespace VitesseCms\Export\Repositories;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Content\Models\ItemIterator;
 
-class ItemRepository
+class ItemRepository extends \VitesseCms\Content\Repositories\ItemRepository
 {
     public function getItemIdsByDatagroupForExportType(
         string $datagroupId,

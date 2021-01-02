@@ -2,8 +2,6 @@
 
 namespace VitesseCms\Export\Models;
 
-use \ArrayIterator;
-
 class ItemIdIterator extends ArrayIterator
 {
     public function __construct(array $items)

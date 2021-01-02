@@ -2,7 +2,9 @@
 
 namespace VitesseCms\Export\Repositories;
 
-use VitesseCms\Export\Interfaces\RepositoryInterface;
+use VitesseCms\Core\Repositories\DatafieldRepository;
+use VitesseCms\Core\Repositories\DatagroupRepository;
+use VitesseCms\Language\Repositories\LanguageRepository;
 
 class RepositoryCollection implements RepositoryInterface
 {
@@ -16,12 +18,33 @@ class RepositoryCollection implements RepositoryInterface
      */
     public $item;
 
+    /**
+     * @var LanguageRepository
+     */
+    public $language;
+
+    /**
+     * @var DatagroupRepository
+     */
+    public $datagroup;
+
+    /**
+     * @var DatafieldRepository
+     */
+    public $datafield;
+
     public function __construct(
         ExportTypeRepository $exportTypeRepository,
-        ItemRepository $itemRepository
+        ItemRepository $itemRepository,
+        LanguageRepository $languageRepository,
+        DatagroupRepository $datagroupRepository,
+        DatafieldRepository $datafieldRepository
     )
     {
         $this->exportType = $exportTypeRepository;
         $this->item = $itemRepository;
+        $this->language = $languageRepository;
+        $this->datagroup = $datagroupRepository;
+        $this->datafield = $datafieldRepository;
     }
 }

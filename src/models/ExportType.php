@@ -4,7 +4,7 @@ namespace VitesseCms\Export\Models;
 
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Admin\Utils\AdminUtil;
-use VitesseCms\Export\Interfaces\AbstractExportHelperInterface;
+use VitesseCms\Export\Helpers\AbstractExportHelperInterface;
 
 class ExportType extends AbstractCollection
 {
@@ -28,14 +28,7 @@ class ExportType extends AbstractCollection
      */
     public $getChildrenFrom;
 
-    public function getHelperObject(): AbstractExportHelperInterface
-    {
-        $class = $this->type;
-
-        return new $class();
-    }
-
-    public function getCachingTime(): string
+    public function getCachingTime(): ?string
     {
         return $this->cachingTime;
     }
@@ -50,7 +43,7 @@ class ExportType extends AbstractCollection
         return $this->datagroup??'';
     }
 
-    public function getType(): string
+    public function getType(): ?string
     {
         return $this->type;
     }
@@ -58,6 +51,11 @@ class ExportType extends AbstractCollection
     public function getGetChildrenFrom(): ?string
     {
         return $this->getChildrenFrom;
+    }
+
+    public function hasGetChildrenFrom(): ?bool
+    {
+        return $this->getChildrenFrom !== null;
     }
 
     public function hasType(): bool
@@ -93,7 +91,7 @@ class ExportType extends AbstractCollection
                     href="/admin/export/admincontent/edit/'.(string)$this->getId().'"
                     class="openmodal"
                 >'.
-                    $this->_('name').
+                    $this->getNameField().
                 '</a>';
         endif;
     }

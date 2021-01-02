@@ -2,24 +2,12 @@
 
 namespace VitesseCms\Export\Helpers;
 
-use VitesseCms\Content\Models\Item;
 use VitesseCms\Shop\Helpers\EtsyHelper;
 use Phalcon\Di;
 
-/**
- * Class EtsyExportHelper
- */
+//TODO to shop and listener
 class EtsyExportHelper extends AbstractExportHelper
 {
-
-    /**
-     * {@inheritdoc}
-     * @throws \Phalcon\Mvc\Collection\Exception
-     *
-     * http://new.craftbeershirts.nl/export/index/index/5ae0be1ca9fc77024018a8c2?embedded=1
-     * @throws \OAuthException
-     * @throws \Exception
-     */
     public function createOutput(): string
     {
         $ids = [
@@ -28,8 +16,7 @@ class EtsyExportHelper extends AbstractExportHelper
         ];
         foreach ($ids as $id ) :
             $etsy = new EtsyHelper();
-
-            $item = Item::findById($id);
+            $item = $this->repositories->item->getById($id);
             if(empty($item->_('etsyId'))) :
                 $listing = $etsy->createListingFromItem($item);
                 $item->set('etsyId', $listing->results[0]->listing_id);
@@ -58,11 +45,9 @@ class EtsyExportHelper extends AbstractExportHelper
                     );
                 endif;
             endif;
-            echo '<pre>';
-            //var_dump($etsy->getListing(603143686));
-            var_dump($etsy->updateInventoryFromItem($item));
+            $etsy->updateInventoryFromItem($item);
         endforeach;
-die();
+
         return '';
     }
 }

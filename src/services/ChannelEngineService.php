@@ -18,8 +18,8 @@ class ChannelEngineService {
     public function __construct()
     {
         $this->apiConfig = Configuration::getDefaultConfiguration();
-        $this->apiConfig->setHost('https://craftbeershirts.channelengine.net/api');
-        $this->apiConfig->setApiKey('apikey', '37efbde9b97880ffc9f327083fa201e30c0c3fca');
+        $this->apiConfig->setHost('');
+        $this->apiConfig->setApiKey('apikey', '');
 
         $this->productApi = new ProductApi(null, $this->apiConfig);
     }

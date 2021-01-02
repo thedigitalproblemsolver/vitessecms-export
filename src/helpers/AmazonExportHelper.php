@@ -2,20 +2,22 @@
 
 namespace VitesseCms\Export\Helpers;
 
+use PhpCsFixer\Tokenizer\Transformer\AttributeTransformer;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Database\AbstractCollection;
+use VitesseCms\Database\Models\FindValue;
+use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Field\Enums\FieldAmazonEnum;
 use VitesseCms\Field\Enums\FieldSizeAndColorEnum;
 use VitesseCms\Form\Helpers\ElementHelper;
+use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Media\Helpers\ImageHelper;
 use VitesseCms\Shop\Helpers\DiscountHelper;
 use VitesseCms\Shop\Models\Discount;
 
-/**
- * Class AmazonExportHelper
- */
 class AmazonExportHelper extends AbstractExportHelper
 {
     /**
@@ -23,9 +25,9 @@ class AmazonExportHelper extends AbstractExportHelper
      */
     protected $discountService;
 
-    public function __construct()
+    public function setDiscountHelper(DiscountHelper $discountHelper): AbstractExportHelperInterface
     {
-        $this->discountService = new DiscountHelper();
+        $this->discountService = $discountHelper;
     }
 
     public function setHeaders(): void
@@ -34,21 +36,17 @@ class AmazonExportHelper extends AbstractExportHelper
         header('Content-Disposition: attachment; filename='.$this->getFilename('csv'));
     }
 
-    public static function buildAdminForm(ExportTypeForm $form, ExportType $item): void
+    public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void
     {
-        parent::buildAdminForm($form, $item);
+        parent::buildAdminForm($form, $item, $repositories);
 
-        $form->_(
-            'select',
+        $form->addDropdown(
             'Amazon Browse Node',
             'AmazonBrowseNode',
-            [
-                'options'  => ElementHelper::arrayToSelectOptions(
-                    FieldAmazonEnum::nodes,
-                    [$item->_('AmazonBrowseNode')]
-                ),
-                'required' => 'required',
-            ]
+            (new Attributes())->setRequired(true)->setOptions(ElementHelper::arrayToSelectOptions(
+                FieldAmazonEnum::nodes,
+                [$item->_('AmazonBrowseNode')]
+            ))
         );
     }
 
@@ -60,8 +58,8 @@ class AmazonExportHelper extends AbstractExportHelper
             foreach ($items as $item) :
                 $putParent = true;
                 if (!empty($item->_('ean')) && !empty($item->_('variations'))) :
-                    $gender = Item::findById($item->_('gender'));
-                    $parent = Item::findById($item->_('parentId'));
+                    $gender = $this->repositories->item->getById($item->_('gender'));
+                    $parent = $this->repositories->item->getById($item->getParentId());
                     foreach ($item->_('variations') as $variation) :
                         if (!empty($variation['ean']) && $variation['stock'] > 0) :
                             if ($putParent) :
@@ -90,10 +88,11 @@ class AmazonExportHelper extends AbstractExportHelper
 
     public function preFindAll(ExportType $exportType): void
     {
-        Item::setFindValue('AmazonBrowseNode', $exportType->_('AmazonBrowseNode'));
-        $parent = Item::findFirst();
+        $parent = $this->repositories->item->findFirst((new FindValueIterator(
+            [new FindValue('AmazonBrowseNode',$exportType->_('AmazonBrowseNode'))]
+        )));
 
-        if ($parent) :
+        if ($parent !== null) :
             Item::setFindValue('parentId', (string)$parent->getId());
         endif;
     }
@@ -109,7 +108,7 @@ class AmazonExportHelper extends AbstractExportHelper
             $parent->_('AmazonCatalogType'),
             $item->_('ean'),
             'CraftBeerShirts',
-            trim($item->_('name')),
+            trim($item->getNameField()),
             $parent->_('AmazonBrowseNode'),
             '', //Cotton
             '', //Black
@@ -138,6 +137,7 @@ class AmazonExportHelper extends AbstractExportHelper
             $item->_('ean'),
             'EAN',
         ];
+        //TODO move to shop and listener
         if (!empty($item->_('discount'))) :
             $discount = Discount::findById($item->_('discount')[0]);
             if ($discount && $this->discountService->isValid($discount)) :
@@ -145,8 +145,8 @@ class AmazonExportHelper extends AbstractExportHelper
                     $return[] = '';
                 endfor;
                 $return[] = DiscountHelper::calculateFinalPrice($discount, $item->_('price_sale'));
-                $return[] = (new \DateTime())->modify('-1 day')->format('Y-m-d');
-                $return[] = (new \DateTime())->modify('+1 year')->format('Y-m-d');
+                $return[] = (new DateTime())->modify('-1 day')->format('Y-m-d');
+                $return[] = (new DateTime())->modify('+1 year')->format('Y-m-d');
             endif;
         endif;
 
@@ -203,6 +203,7 @@ class AmazonExportHelper extends AbstractExportHelper
             'EAN',
         ];
 
+        //TODO move to shop and listener
         if (!empty($item->_('discount'))) :
             $discount = Discount::findById($item->_('discount')[0]);
             if ($discount && $this->discountService->isValid($discount)) :

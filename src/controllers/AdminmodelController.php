@@ -14,7 +14,10 @@ class AdminmodelController extends AbstractExportController
     {
         $this->view->setVar(
             'content',
-            (new ModelForm())->renderForm(
+            (new ModelForm())
+                ->setRepositories($this->repositories)
+                ->buildForm()
+                ->renderForm(
                 'admin/export/adminmodel/createExport',
                 'exportForm',
                 true,

@@ -2,18 +2,22 @@
 
 namespace VitesseCms\Export\Forms;
 
+use VitesseCms\Export\Repositories\RepositoryInterface;
+use VitesseCms\Form\AbstractFormWithRepository;
 use VitesseCms\Form\Helpers\ElementHelper;
+use VitesseCms\Form\Interfaces\FormWithRepositoryInterface;
 use VitesseCms\Form\Models\Attributes;
-use VitesseCms\Language\Models\Language;
 use VitesseCms\Core\Utils\SystemUtil;
-use VitesseCms\Form\AbstractForm;
 
-class ModelForm extends AbstractForm
+class ModelForm extends AbstractFormWithRepository
 {
-    public function initialize(): void
-    {
-        Language::setFindPublished(false);
+    /**
+     * @var RepositoryInterface
+     */
+    protected $repositories;
 
+    public function buildForm(): FormWithRepositoryInterface
+    {
         $this->addDropdown(
             '%ADMIN_MODEL%',
             'model',
@@ -21,18 +25,21 @@ class ModelForm extends AbstractForm
                 ->setRequired(true)
                 ->setInputClass('select2')
                 ->setOptions(ElementHelper::arrayToSelectOptions(SystemUtil::getModels()))
-        )
-            ->addDropdown(
-                '%ADMIN_LANGUAGE%',
-                'language',
-                (new Attributes())
-                    ->setRequired(true)
-                    ->setInputClass('select2')
-                    ->setOptions(ElementHelper::arrayToSelectOptions(Language::findAll()))
+        )->addDropdown(
+            '%ADMIN_LANGUAGE%',
+            'language',
+            (new Attributes())
+                ->setRequired(true)
+                ->setInputClass('select2')
+                ->setOptions(ElementHelper::modelIteratorToOptions(
+                    $this->repositories->language->findAll(null, false)
+                )
             )
-            ->addDate('From', 'date_from')
-            ->addDate('Till', 'date_till')
-            ->_('submit', '%CORE_SAVE%')
-        ;
+        )
+        ->addDate('From', 'date_from')
+        ->addDate('Till', 'date_till')
+        ->addSubmitButton('%CORE_SAVE%');
+
+        return $this;
     }
 }

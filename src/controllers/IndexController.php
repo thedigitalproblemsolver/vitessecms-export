@@ -5,10 +5,14 @@ namespace VitesseCms\Export\Controllers;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Core\AbstractController;
 use VitesseCms\Core\Helpers\ItemHelper;
+use VitesseCms\Database\Models\FindOrder;
+use VitesseCms\Database\Models\FindOrderIterator;
+use VitesseCms\Database\Models\FindValue;
+use VitesseCms\Database\Models\FindValueIterator;
+use VitesseCms\Export\Helpers\AbstractExportHelperInterface;
 use VitesseCms\Export\Helpers\SitemapExportHelper;
-use VitesseCms\Export\Interfaces\AbstractExportHelperInterface;
-use VitesseCms\Export\Interfaces\RepositoriesInterface;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoriesInterface;
 
 class IndexController extends AbstractController implements RepositoriesInterface
 {
@@ -16,7 +20,8 @@ class IndexController extends AbstractController implements RepositoriesInterfac
     {
         $exportType = $this->repositories->exportType->getById($id);
         if ($exportType !== null) :
-            $exportHelper = $exportType->getHelperObject();
+            $class = $exportType->getTypeClass();
+            $exportHelper = new $class($this->configuration->getLanguage(), $this->repositories);
 
             $content = false;
             if ($exportType->hasCachingTime()) :
@@ -53,18 +58,20 @@ class IndexController extends AbstractController implements RepositoriesInterfac
     ): string {
         $items = [[]];
         $exportHelper->preFindAll($exportType);
-        Item::setFindValue('datagroup', $exportType->getDatagroup());
-        Item::addFindOrder('createdAt', -1);
-        Item::setFindValue(
-            'excludeFromExport',
-            ['$nin' => [(string)$exportType->getId()]]
+        $datagroupItems = $this->repositories->item->findAll(
+            new FindValueIterator([
+                new FindValue('datagroup', $exportType->getDatagroup()),
+                new FindValue('excludeFromExport', ['$nin' => [(string)$exportType->getId()]])
+            ]),
+            true,
+            9999,
+            new FindOrderIterator([new FindOrder('createdAt',-1)])
         );
-        Item::setFindLimit(9999);
-        $datagroupItems = Item::findAll();
-        if ($exportType->_('getChildrenFrom')) :
+
+        if ($exportType->hasGetChildrenFrom()) :
             $datagroupItems = array_merge(
                 $datagroupItems,
-                ItemHelper::getRecursiveChildren($exportType->_('getChildrenFrom'))
+                ItemHelper::getRecursiveChildren($exportType->getGetChildrenFrom())
             );
         endif;
 

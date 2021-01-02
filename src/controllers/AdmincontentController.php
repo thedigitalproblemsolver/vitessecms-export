@@ -1,19 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
 
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoryInterface;
 
-/**
- * Class DatagroupController
- */
-class AdmincontentController extends AbstractExportController
+class AdmincontentController extends AbstractExportController implements RepositoryInterface
 {
-    /**
-     * onConstruct
-     * @throws \Phalcon\Mvc\Collection\Exception
-     */
     public function onConstruct()
     {
         parent::onConstruct();

@@ -1,20 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace VitesseCms\Export\Helpers;
 
 use VitesseCms\Form\AbstractForm;
 
-/**
- * Class ExportHelper
- */
 class ExportHelper
 {
-
-    /**
-     * @param AbstractForm $form
-     *
-     * @return array
-     */
     public static function getFieldsFromForm(AbstractForm $form) : array
     {
         $fields = ['id','published','parentId','createdAt'];

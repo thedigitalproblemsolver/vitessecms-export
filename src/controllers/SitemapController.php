@@ -1,38 +1,44 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
 
+use Thepixeldeveloper\Sitemap\Drivers\XmlWriterDriver;
 use VitesseCms\Core\AbstractController;
+use VitesseCms\Database\Models\FindValue;
+use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Helpers\SitemapExportHelper;
 use VitesseCms\Export\Models\ExportType;
 use Thepixeldeveloper\Sitemap\Output;
 use Thepixeldeveloper\Sitemap\Sitemap;
 use Thepixeldeveloper\Sitemap\SitemapIndex;
+use VitesseCms\Export\Repositories\RepositoriesInterface;
 
-/**
- * Class SitemapController
- */
-class SitemapController extends AbstractController
+class SitemapController extends AbstractController implements RepositoriesInterface
 {
-    /**
-     * IndexAction
-     */
     public function IndexAction(): void
     {
-        ExportType::setFindValue('type', SitemapExportHelper::class);
-        $sitemaps = ExportType::findAll();
-        if ($sitemaps) :
-            $sitemapIndex = new SitemapIndex();
-            foreach ($sitemaps as $sitemap) :
-                $url = (new Sitemap(
-                    $this->url->getBaseUri() . 'export/index/index/'.$sitemap->getId()
-                ))->setLastMod(date('Y-m-d', time()));
+        $sitemaps = $this->repositories->exportType->findAll(
+            new FindValueIterator([new FindValue('type', SitemapExportHelper::class)])
+        );
 
-                $sitemapIndex->addSitemap($url);
-            endforeach;
+        if ($sitemaps->count() > 0) :
+            $sitemapIndex = new SitemapIndex();
+            while ($sitemaps->valid()) :
+                $sitemap = $sitemaps->current();
+                $url = (new Sitemap(
+                    $this->url->getBaseUri() . 'export/index/index/' . $sitemap->getId()
+                ));
+                $url->setLastMod($sitemap->getUpdatedOn());
+
+                $sitemapIndex->add($url);
+                $sitemaps->next();
+            endwhile;
+
+            $driver = new XmlWriterDriver();
+            $sitemapIndex->accept($driver);
 
             header('Content-type: text/xml');
-            echo (new Output())->getOutput($sitemapIndex);
+            echo $driver->output();
         endif;
 
         $this->view->disable();

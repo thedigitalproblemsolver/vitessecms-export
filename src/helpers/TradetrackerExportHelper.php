@@ -51,10 +51,6 @@ class TradetrackerExportHelper extends AbstractExportHelper
         'EAN',
     ];
 
-
-    /**
-     * {@inheritdoc}
-     */
     public function createOutput(): string
     {
         ob_start();
@@ -98,11 +94,11 @@ class TradetrackerExportHelper extends AbstractExportHelper
                             $callingName = $this->exportType->_('exportDatafield_'.$field);
                             try {
                                 new ObjectId($item->_($callingName));
-                                $datafieldItem = Item::findById($item->_($callingName));
+                                $datafieldItem = $this->repositories->item->getById($item->_($callingName));
                                 $row = $this->addField(
                                     $row,
                                     $field,
-                                    $datafieldItem->_('name')
+                                    $datafieldItem->getNameField()
                                 );
                             } catch (\Exception $e) {
                                 $row = $this->addField(
@@ -122,6 +118,7 @@ class TradetrackerExportHelper extends AbstractExportHelper
                 endswitch;
             endforeach;
 
+            //TODO move to shop and listeners
             if ($item->_('variations')) :
                 $colors = $sizes = $stockSizes = $ean = [];
                 $image = '';
@@ -175,19 +172,9 @@ class TradetrackerExportHelper extends AbstractExportHelper
         header('Content-Disposition: attachment; filename='.$this->getFilename('csv'));
     }
 
-    /**
-     * @param array $row
-     * @param string $field
-     * @param string $value
-     *
-     * @return array
-     */
     protected function addField(array $row, string $field, string $value): array
     {
-        $row[$field] = trim((new Filter())->sanitize(
-            $value,
-            'string'
-        ));
+        $row[$field] = trim((new Filter())->sanitize( $value, 'string'));
 
         return $row;
     }

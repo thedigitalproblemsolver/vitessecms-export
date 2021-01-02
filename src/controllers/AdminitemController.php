@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
 
@@ -6,22 +6,22 @@ use VitesseCms\Content\Forms\ItemForm;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Core\Models\Datafield;
 use VitesseCms\Core\Models\Datagroup;
+use VitesseCms\Database\Models\FindValue;
+use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Forms\DataGroupForm;
 use VitesseCms\Export\Helpers\ExportHelper;
+use VitesseCms\Export\Repositories\RepositoriesInterface;
 
-/**
- * Class AdminItemController
- */
-class AdminitemController extends AbstractExportController
+class AdminitemController extends AbstractExportController implements RepositoriesInterface
 {
-    /**
-     * core action
-     */
     public function indexAction(): void
     {
         $this->view->setVar(
             'content',
-            (new DataGroupForm())->renderForm(
+            (new DataGroupForm())
+                ->setRepositories($this->repositories)
+                ->buildForm()
+                ->renderForm(
                 'admin/export/adminitem/createExport',
                 'exportForm',
                 true,
@@ -31,26 +31,24 @@ class AdminitemController extends AbstractExportController
         $this->prepareView();
     }
 
-    /**
-     * @throws \Phalcon\Mvc\Collection\Exception
-     */
     public function createExportAction(): void
     {
         if ($this->request->isPost()) :
-            $datagroup = Datagroup::findById($this->request->get('datagroup'));
-            $datagroupFields = $datagroup->_('datafields');
+            $datagroup = $this->repositories->datagroup->getById($this->request->get('datagroup'));
+            $datagroupFields = $datagroup->getDatafields();
 
-            Item::setFindPublished(false);
-            Item::setFindValue('datagroup', $this->request->get('datagroup') );
-            /** @var AbstractCollection[] $items */
-            $items = Item::findAll();
+            $items = $this->repositories->item->findAll(
+                new FindValueIterator([new FindValue('datagroup', $this->request->get('datagroup'))]),
+                false
+            );
 
-            $fields = ExportHelper::getFieldsFromForm(new ItemForm($items[0]));
+            $fields = ExportHelper::getFieldsFromForm(new ItemForm($items->current()));
             foreach ($fields as $key => $fieldName) :
-                Datafield::setFindValue('calling_name' , $fieldName);
-                $datafield = Datafield::findFirst();
-                if(
-                    $datafield
+                $datafield = $this->repositories->datafield->findFirst(
+                    new FindValueIterator([new FindValue('calling_name', $fieldName)])
+                );
+                if (
+                    $datafield !== null
                     && (
                         !isset($datagroupFields[(string)$datafield->getId()]['exportable'])
                         || !$datagroupFields[(string)$datafield->getId()]['exportable']
@@ -62,7 +60,7 @@ class AdminitemController extends AbstractExportController
 
             $this->createExport(
                 $fields,
-                $items
+                (array)$items
             );
         else :
             $this->redirect();

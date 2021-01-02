@@ -2,16 +2,18 @@
 
 namespace VitesseCms\Export\Helpers;
 
-use VitesseCms\Content\Models\Item;
+use Thepixeldeveloper\Sitemap\Drivers\XmlWriterDriver;
+use Thepixeldeveloper\Sitemap\Output;
+use Thepixeldeveloper\Sitemap\Url;
+use Thepixeldeveloper\Sitemap\Urlset;
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Core\Services\UrlService;
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
+use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Form\Helpers\ElementHelper;
-use Thepixeldeveloper\Sitemap\Output;
-use Thepixeldeveloper\Sitemap\Url;
-use Thepixeldeveloper\Sitemap\Urlset;
+use VitesseCms\Form\Models\Attributes;
 
 /**
  * Class SitemapExportHelper
@@ -19,6 +21,31 @@ use Thepixeldeveloper\Sitemap\Urlset;
  */
 class SitemapExportHelper extends AbstractExportHelper
 {
+    public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void
+    {
+        $form->addDropdown(
+            '%EXPORT_SITEMAP_CHANGE_FREQUENCY%',
+            'frequency',
+            (new Attributes())->setRequired(true)->setOptions(ElementHelper::arrayToSelectOptions([
+                'always' => '%EXPORT_SITEMAP_ALWAYS%',
+                'hourly' => '%EXPORT_SITEMAP_HOURLY%',
+                'daily' => '%EXPORT_SITEMAP_DAILY%',
+                'weekly' => '%EXPORT_SITEMAP_WEEKLY%',
+                'monthly' => '%EXPORT_SITEMAP_MONTHLY%',
+                'yearly' => '%EXPORT_SITEMAP_YEARLY%',
+                'never' => '%EXPORT_SITEMAP_NEVER%',
+            ]))
+        )->addDropdown(
+            '%EXPORT_SITEMAP_PRIORITY%',
+            'priority',
+            (new Attributes())->setRequired(true)->setOptions(ElementHelper::arrayToSelectOptions([
+                '0.1' => '%EXPORT_SITEMAP_NOT_IMPORTANT%',
+                '0.5' => '%EXPORT_SITEMAP_IMPORTANT%',
+                '1' => '%EXPORT_SITEMAP_VERY_IMPORTANT%'
+            ]))
+        );
+    }
+
     public function createOutput(): string
     {
         $urlSet = new Urlset();
@@ -46,58 +73,25 @@ class SitemapExportHelper extends AbstractExportHelper
         $urlSet = new Urlset();
         while ($itemIterator->valid()):
             $itemId = $itemIterator->current();
-            Item::setRenderFields(false);
-            /** @var Item $item */
-            $item = Item::findById((string)$itemId->getId());
-            $url = (new Url($urlService->getBaseUri() . $item->_('slug')))
-                ->setLastMod($item->getUpdatedOn()->format('Y-m-d'))
-                ->setChangeFreq($exportType->_('frequency'))
-                ->setPriority($exportType->_('priority'));
+            $item = $this->repositories->item->getById((string)$itemId->getId(), true, false);
 
-            $urlSet->addUrl($url);
+            $url = new Url($urlService->getBaseUri() . $item->getSlug());
+            $url->setLastMod($item->getUpdatedOn()??$item->getCreateDate());
+            $url->setChangeFreq($exportType->_('frequency'));
+            $url->setPriority($exportType->_('priority'));
+
+            $urlSet->add($url);
             $itemIterator->next();
         endwhile;
 
-        return (new Output())->getOutput($urlSet);
+        $driver = new XmlWriterDriver();
+        $urlSet->accept($driver);
+
+        return $driver->output();
     }
 
     public function setHeaders(): void
     {
         header('Content-type: text/xml');
-    }
-
-    public static function buildAdminForm(ExportTypeForm $form, ExportType $item): void
-    {
-        $form->_(
-            'select',
-            '%EXPORT_SITEMAP_CHANGE_FREQUENCY%',
-            'frequency',
-            [
-                'required' => 'required',
-                'options' => ElementHelper::arrayToSelectOptions([
-                    'always' => '%EXPORT_SITEMAP_ALWAYS%',
-                    'hourly' => '%EXPORT_SITEMAP_HOURLY%',
-                    'daily' => '%EXPORT_SITEMAP_DAILY%',
-                    'weekly' => '%EXPORT_SITEMAP_WEEKLY%',
-                    'monthly' => '%EXPORT_SITEMAP_MONTHLY%',
-                    'yearly' => '%EXPORT_SITEMAP_YEARLY%',
-                    'never' => '%EXPORT_SITEMAP_NEVER%',
-                ]),
-            ]
-        );
-
-        $form->_(
-            'select',
-            '%EXPORT_SITEMAP_PRIORITY%',
-            'priority',
-            [
-                'required' => 'required',
-                'options' => ElementHelper::arrayToSelectOptions([
-                    '0.1' => '%EXPORT_SITEMAP_NOT_IMPORTANT%',
-                    '0.5' => '%EXPORT_SITEMAP_IMPORTANT%',
-                    '1' => '%EXPORT_SITEMAP_VERY_IMPORTANT%'
-                ])
-            ]
-        );
     }
 }

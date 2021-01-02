@@ -17,6 +17,9 @@
     }
   },
   "require": {
-    "vitessecms/vitessecms": "~0.0.12"
+    "vitessecms/vitessecms": "~0.0.12",
+    "thepixeldeveloper/sitemap": ">=5.1.3",
+    "lukesnowden/google-shopping-feed": "^2.0",
+    "suin/php-rss-writer": "^1.6"
   }
 }

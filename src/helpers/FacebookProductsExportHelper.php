@@ -67,7 +67,7 @@ class FacebookProductsExportHelper extends AbstractExportHelper
                             break;
                         case 'link':
                             $row['url'] = UtmUtil::appendToUrl(
-                                $this->url->getBaseUri().$item->_('slug'),
+                                $this->url->getBaseUri() . $item->_('slug'),
                                 false
                             );
                             break;
@@ -79,21 +79,22 @@ class FacebookProductsExportHelper extends AbstractExportHelper
                             break;
                         case 'price':
                             $row[$field] = '';
-                            if ($this->exportType->_('exportDatafield_'.$field)) :
-                                $price = $item->_($this->exportType->_('exportDatafield_'.$field).'_sale');
-                            elseif ($this->exportType->_('exportField_'.$field)) :
-                                $price = $this->exportType->_('exportField_'.$field);
+                            if ($this->exportType->_('exportDatafield_' . $field)) :
+                                $price = $item->_($this->exportType->_('exportDatafield_' . $field) . '_sale');
+                            elseif ($this->exportType->_('exportField_' . $field)) :
+                                $price = $this->exportType->_('exportField_' . $field);
                             endif;
 
+                            //TOOD move to shop and listener
                             $row = $this->addField($row, $field, $price);
-                            if(!empty($item->_('discount'))) :
+                            if (!empty($item->_('discount'))) :
                                 $discount = Discount::findById($item->_('discount')[0]);
 
-                                if($discount && $discountService->isValid($discount)) :
+                                if ($discount && $discountService->isValid($discount)) :
                                     $row = $this->addField(
                                         $row,
                                         'sale_price',
-                                        (string) DiscountHelper::calculateFinalPrice(
+                                        (string)DiscountHelper::calculateFinalPrice(
                                             $discount,
                                             (float)$price
                                         )
@@ -111,9 +112,8 @@ class FacebookProductsExportHelper extends AbstractExportHelper
                             $description = (new Filter())->sanitize(
                                     $this->setting->get('SITE_LABEL_MOTTO'),
                                     'string'
-                                ).' at '.
-                                $this->setting->get('WEBSITE_DEFAULT_NAME')
-                            ;
+                                ) . ' at ' .
+                                $this->setting->get('WEBSITE_DEFAULT_NAME');
 
                             $row = $this->addField(
                                 $row,
@@ -122,32 +122,32 @@ class FacebookProductsExportHelper extends AbstractExportHelper
                             );
                             break;
                         case 'title':
-                            $title = $item->_('name');
+                            $title = $item->getNameField();
                             if ($item->_('gender')) :
-                                $gender = Item::findById($item->_('gender'));
+                                $gender = $this->repositories->item->getById($item->_('gender'));
                                 if ($gender) :
-                                    $title .= ' - '.$gender->_('name');
+                                    $title .= ' - ' . $gender->getNameField();
                                 endif;
                             endif;
 
-                            if ($item->_('parentId')) {
-                                $parent = Item::findById($item->_('parentId'));
+                            if ($item->getParentId() !== null) {
+                                $parent = $this->repositories->item->getById($item->getParentId());
                                 if ($item->_('gender')) :
-                                    $title = $item->_('name').' - '.$parent->_('name').' - '.$gender->_('name');
+                                    $title = $item->getNameField() .
+                                        ' - ' .
+                                        $parent->getNameField() .
+                                        ' - ' .
+                                        $gender->getNameField();
                                 else :
-                                    $title = $item->_('name').' - '.$parent->_('name');
+                                    $title = $item->getNameField() . ' - ' . $parent->getNameField();
                                 endif;
                             }
 
-                            $row = $this->addField(
-                                $row,
-                                $field,
-                                $title
-                            );
+                            $row = $this->addField($row, $field, $title);
                             break;
                         case 'gender':
                             if ($item->_('gender')) :
-                                $gender = Item::findById($item->_('gender'));
+                                $gender = $this->repositories->item->getById($item->_('gender'));
                                 $row = $this->addField(
                                     $row,
                                     $field,
@@ -157,15 +157,15 @@ class FacebookProductsExportHelper extends AbstractExportHelper
                             break;
                         default:
                             $row[$field] = '';
-                            if($this->exportType->_('exportDatafield_'.$field)) :
-                                $callingName = $this->exportType->_('exportDatafield_'.$field);
+                            if ($this->exportType->_('exportDatafield_' . $field)) :
+                                $callingName = $this->exportType->_('exportDatafield_' . $field);
                                 try {
                                     new ObjectID($item->_($callingName));
-                                    $datafieldItem = Item::findById($item->_($callingName));
+                                    $datafieldItem = $this->repositories->item->getById($item->_($callingName));
                                     $row = $this->addField(
                                         $row,
                                         $field,
-                                        $datafieldItem->_('name')
+                                        $datafieldItem->getNameField()
                                     );
                                 } catch (\Exception $e) {
                                     $row = $this->addField(
@@ -174,11 +174,11 @@ class FacebookProductsExportHelper extends AbstractExportHelper
                                         $item->_($callingName)
                                     );
                                 }
-                            elseif($this->exportType->_('exportField_'.$field)) :
+                            elseif ($this->exportType->_('exportField_' . $field)) :
                                 $row = $this->addField(
                                     $row,
                                     $field,
-                                    $this->exportType->_('exportField_'.$field)
+                                    $this->exportType->_('exportField_' . $field)
                                 );
                             endif;
                             break;
@@ -195,7 +195,7 @@ class FacebookProductsExportHelper extends AbstractExportHelper
     public function setHeaders(): void
     {
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename='.$this->getFilename('xml'));
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('xml'));
     }
 
     protected function addField(array $row, string $field, string $value): array

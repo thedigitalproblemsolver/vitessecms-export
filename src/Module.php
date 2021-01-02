@@ -4,11 +4,14 @@ namespace VitesseCms\Export;
 
 use VitesseCms\Communication\Services\MailchimpService;
 use VitesseCms\Core\AbstractModule;
+use VitesseCms\Core\Repositories\DatafieldRepository;
+use VitesseCms\Core\Repositories\DatagroupRepository;
 use VitesseCms\Export\Repositories\ExportTypeRepository;
 use VitesseCms\Export\Repositories\ItemRepository;
 use VitesseCms\Export\Repositories\RepositoryCollection;
 use VitesseCms\Export\Services\ChannelEngineService;
 use Phalcon\DiInterface;
+use VitesseCms\Language\Repositories\LanguageRepository;
 
 class Module extends AbstractModule
 {
@@ -23,7 +26,10 @@ class Module extends AbstractModule
         ));
         $di->setShared('repositories', new RepositoryCollection(
             new ExportTypeRepository(),
-            new ItemRepository()
+            new ItemRepository(),
+            new LanguageRepository(),
+            new DatagroupRepository(),
+            new DatafieldRepository()
         ));
 
         parent::registerServices($di, 'Export');

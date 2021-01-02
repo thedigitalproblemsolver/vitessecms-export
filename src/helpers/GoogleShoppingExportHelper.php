@@ -19,7 +19,7 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
         UtmUtil::setSource('google');
         UtmUtil::setMedium('shopping');
 
-        GoogleShopping::title('Google Shopping - '.$this->url->getBaseUri());
+        GoogleShopping::title('Google Shopping - ' . $this->url->getBaseUri());
         GoogleShopping::link(
             str_replace(
                 ['&amp;', '&'],
@@ -47,15 +47,16 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
                         $description = (new Filter())->sanitize(
                                 $this->setting->get('SITE_LABEL_MOTTO'),
                                 'string'
-                            ).' @ '.
-                            $this->setting->get('WEBSITE_DEFAULT_NAME')
-                        ;
+                            ) . ' @ ' .
+                            $this->setting->get('WEBSITE_DEFAULT_NAME');
                     endif;
                     $product->description($description);
+
+                    //TODO move to shop and listener
                     $product->price($item->_('price_sale'));
-                    if(!empty($item->_('discount'))) :
+                    if (!empty($item->_('discount'))) :
                         $discount = Discount::findById($item->_('discount')[0]);
-                        if($discount && $discountService->isValid($discount)) :
+                        if ($discount && $discountService->isValid($discount)) :
                             $product->sale_price(DiscountHelper::calculateFinalPrice(
                                 $discount,
                                 (float)$item->_('price_sale'))
@@ -68,21 +69,21 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
                             ['&amp;', '&'],
                             ['&', '&amp;'],
                             UtmUtil::appendToUrl(
-                                $this->url->getBaseUri().$item->_('slug')
+                                $this->url->getBaseUri() . $item->_('slug')
                                 , false
                             )
                         )
                     );
                     $product->image_link(
-                        $this->url->getBaseUri().
-                        'uploads/'.
-                        Di::getDefault()->get('config')->get('account').
-                        '/'.$item->_('firstImage')
+                        $this->url->getBaseUri() .
+                        'uploads/' .
+                        Di::getDefault()->get('config')->get('account') .
+                        '/' . $item->_('firstImage')
                     );
                     $product->condition('new');
                     $product->availability('in stock');
                     $product->brand('CraftBeerShirts');
-                    if($item->_('ean')):
+                    if ($item->_('ean')):
                         $product->gtin($item->_('ean'));
                     endif;
                     $product->product_type('Kleding en accessoires > Kleding > Overhemden, shirts en bovenstukjes');
@@ -91,19 +92,23 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
                     $product->age_group('adult');
 
                     if ($item->_('gender')) :
-                        $gender = Item::findById($item->_('gender'));
+                        $gender = $this->repositories->item->getById($item->_('gender'));
                         if ($gender) :
                             $product->gender($gender->_('productfeedName'));
-                            $title = $item->_('name').' - '.$gender->_('name');
+                            $title = $item->getNameField() . ' - ' . $gender->getNameField();
                         endif;
                     endif;
 
-                    if($item->_('parentId')) {
-                        $parent = Item::findById($item->_('parentId'));
+                    if ($item->getParentId() !== null) {
+                        $parent = $this->repositories->item->getById($item->getParentId());
                         if ($item->_('gender')) :
-                            $title = $item->_('name').' - '.$parent->_('name').' - '.$gender->_('name');
+                            $title = $item->getNameField() .
+                                ' - ' .
+                                $parent->getNameField() .
+                                ' - ' .
+                                $gender->getNameField();
                         else :
-                            $title = $item->_('name').' - '.$parent->_('name');
+                            $title = $item->getNameField() . ' - ' . $parent->getNameField();
                         endif;
                     }
                     $product->title($title);
@@ -112,7 +117,7 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
                         $product->shipping(
                             null,
                             null,
-                            $shipping->_('costsDefaultWithVat').' '.$this->setting->get('SHOP_CURRENCY_ISO')
+                            $shipping->_('costsDefaultWithVat') . ' ' . $this->setting->get('SHOP_CURRENCY_ISO')
                         );
                     endif;
 
@@ -120,8 +125,8 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
                         foreach ((array)$item->_('variations') as $variation) :
                             $variant = $product->variant();
                             $variant->size($variation['size']);
-                            $variant->id($item->getId().'_'.str_replace('&', '', $variation['sku']));
-                            $variant->title($title.' - '.$variation['size']);
+                            $variant->id($item->getId() . '_' . str_replace('&', '', $variation['sku']));
+                            $variant->title($title . ' - ' . $variation['size']);
                             $variant->gtin($variation['ean']);
 
                             $sku = explode('_', $variation['sku']);
@@ -139,7 +144,7 @@ class GoogleShoppingExportHelper extends AbstractExportHelper
         endforeach;
         UtmUtil::reset();
 
-        ini_set('memory_limit','512M');
+        ini_set('memory_limit', '512M');
 
         return GoogleShopping::asRss();
     }

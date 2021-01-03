@@ -20,6 +20,8 @@
     "vitessecms/vitessecms": "~0.0.14",
     "thepixeldeveloper/sitemap": "^5.1",
     "lukesnowden/google-shopping-feed": "^2.0",
-    "suin/php-rss-writer": "^1.6"
+    "suin/php-rss-writer": "^1.6",
+    "channelengine/merchant-api-client-php": "^2.6",
+    "inakiabt/etsy-php": "^0.11.0"
   }
 }

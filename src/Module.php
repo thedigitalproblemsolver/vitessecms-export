@@ -4,7 +4,7 @@ namespace VitesseCms\Export;
 
 use VitesseCms\Communication\Services\MailchimpService;
 use VitesseCms\Core\AbstractModule;
-use VitesseCms\Core\Repositories\DatafieldRepository;
+use VitesseCms\Datafield\Repositories\DatafieldRepository;
 use VitesseCms\Core\Repositories\DatagroupRepository;
 use VitesseCms\Export\Repositories\ExportTypeRepository;
 use VitesseCms\Export\Repositories\ItemRepository;

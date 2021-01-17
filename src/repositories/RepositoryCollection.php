@@ -2,7 +2,7 @@
 
 namespace VitesseCms\Export\Repositories;
 
-use VitesseCms\Core\Repositories\DatafieldRepository;
+use VitesseCms\Datafield\Repositories\DatafieldRepository;
 use VitesseCms\Core\Repositories\DatagroupRepository;
 use VitesseCms\Language\Repositories\LanguageRepository;
 

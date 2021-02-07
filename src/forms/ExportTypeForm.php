@@ -3,7 +3,7 @@
 namespace VitesseCms\Export\Forms;
 
 use VitesseCms\Content\Models\Item;
-use VitesseCms\Core\Models\Datagroup;
+use VitesseCms\Datagroup\Models\Datagroup;
 use VitesseCms\Database\Interfaces\BaseCollectionInterface;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;

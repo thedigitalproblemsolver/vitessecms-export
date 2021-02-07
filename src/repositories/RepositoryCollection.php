@@ -3,7 +3,7 @@
 namespace VitesseCms\Export\Repositories;
 
 use VitesseCms\Datafield\Repositories\DatafieldRepository;
-use VitesseCms\Core\Repositories\DatagroupRepository;
+use VitesseCms\Datagroup\Repositories\DatagroupRepository;
 use VitesseCms\Language\Repositories\LanguageRepository;
 
 class RepositoryCollection implements RepositoryInterface

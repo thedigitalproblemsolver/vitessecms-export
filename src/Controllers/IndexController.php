@@ -133,11 +133,11 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                 echo '<pre>';
                 if($product === null) {*/
 
-        //https://craftbeershirts.nl/admin/content/adminitem/edit/5b511039583b414f5a276633
+        //https://craftbeershirts.nl/Admin/content/adminitem/edit/5b511039583b414f5a276633
         //$item = Item::findById('5b511039583b414f5a276633');
         //$this->channelEngine->createOrUpdateProduct($item);
 
-        //https://craftbeershirts.nl/admin/content/adminitem/edit/5b1bbfc7583b41334f5ce3df
+        //https://craftbeershirts.nl/Admin/content/adminitem/edit/5b1bbfc7583b41334f5ce3df
         /*$item = Item::findById('5b1bbfc7583b41334f5ce3df');
         $this->channelEngine->createOrUpdateProduct($item);*/
 

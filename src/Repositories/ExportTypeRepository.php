@@ -17,14 +17,15 @@ class ExportTypeRepository
 
         /** @var ExportType $exportType */
         $exportType = ExportType::findById($id);
-        if(is_object($exportType)):
+        if (is_object($exportType)):
             return $exportType;
         endif;
 
         return null;
     }
 
-    public function findAll(?FindValueIterator $findValues = null): ExportTypeIterator {
+    public function findAll(?FindValueIterator $findValues = null): ExportTypeIterator
+    {
         $this->parseFindValues($findValues);
 
         return new ExportTypeIterator(ExportType::findAll());

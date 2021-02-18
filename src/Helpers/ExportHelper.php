@@ -6,11 +6,11 @@ use VitesseCms\Form\AbstractForm;
 
 class ExportHelper
 {
-    public static function getFieldsFromForm(AbstractForm $form) : array
+    public static function getFieldsFromForm(AbstractForm $form): array
     {
-        $fields = ['id','published','parentId','createdAt'];
-        foreach ( $form->getElements() as $element) :
-            if(
+        $fields = ['id', 'published', 'parentId', 'createdAt'];
+        foreach ($form->getElements() as $element) :
+            if (
                 get_class($element) != 'Phalcon\Forms\Element\Submit'
                 && get_class($element) != 'Phalcon\Forms\Element\Hidden'
             ) :

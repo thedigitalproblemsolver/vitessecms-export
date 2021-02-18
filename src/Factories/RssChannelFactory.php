@@ -16,7 +16,8 @@ class RssChannelFactory
         string $channelTitle,
         SettingService $setting,
         string $channelDescription = ''
-    ): ChannelInterface {
+    ): ChannelInterface
+    {
         $di = Di::getDefault();
         $dateTime = new DateTime();
 

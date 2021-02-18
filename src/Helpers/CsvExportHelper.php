@@ -11,7 +11,7 @@ class CsvExportHelper extends AbstractExportHelper
     public function setHeaders(): void
     {
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename='.$this->getFilename('csv'));
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('csv'));
     }
 
     public function createOutput(): string

@@ -10,7 +10,8 @@ class ItemRepository extends \VitesseCms\Content\Repositories\ItemRepository
     public function getItemIdsByDatagroupForExportType(
         string $datagroupId,
         string $exportTypeId
-    ): ItemIterator {
+    ): ItemIterator
+    {
         Item::setFindValue('datagroup', $datagroupId);
         Item::addFindOrder('createdAt', -1);
         Item::setFindValue('excludeFromExport', ['$nin' => [$exportTypeId]]);
@@ -23,16 +24,17 @@ class ItemRepository extends \VitesseCms\Content\Repositories\ItemRepository
     public function appendRecursiveChildrenForExportType(
         string $parentId,
         ItemIterator $itemIterator
-    ): ItemIterator {
+    ): ItemIterator
+    {
         Item::setFindValue('parentId', $parentId);
         Item::setReturnFields(['hasChildren' => true]);
         Item::setFindLimit(9999);
         $items = Item::findAll();
         foreach ($items as $item):
             $itemIterator->add($item);
-            if($item->hasChildren()) :
+            if ($item->hasChildren()) :
                 $itemIterator = $this->appendRecursiveChildrenForExportType(
-                    (string) $item->getId(),
+                    (string)$item->getId(),
                     $itemIterator
                 );
             endif;

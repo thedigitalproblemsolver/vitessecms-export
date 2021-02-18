@@ -22,11 +22,11 @@ class AdminitemController extends AbstractExportController implements Repositori
                 ->setRepositories($this->repositories)
                 ->buildForm()
                 ->renderForm(
-                'admin/export/adminitem/createExport',
-                'exportForm',
-                true,
-                true
-            )
+                    'admin/export/adminitem/createExport',
+                    'exportForm',
+                    true,
+                    true
+                )
         );
         $this->prepareView();
     }

@@ -11,7 +11,7 @@ use Phalcon\Filter;
 
 class BeslistExportHelper extends AbstractExportHelper
 {
-    protected $fields = [
+    protected static $adminFormFields = [
         'titel',
         'merk',
         'prijs',
@@ -21,8 +21,7 @@ class BeslistExportHelper extends AbstractExportHelper
         'levertijd',
         'beschrijving',
     ];
-
-    protected static $adminFormFields = [
+    protected $fields = [
         'titel',
         'merk',
         'prijs',
@@ -52,31 +51,31 @@ class BeslistExportHelper extends AbstractExportHelper
                         case 'url':
                             $row['url'] = UtmUtil::appendToUrl(
                                 $this->url->getBaseUri() . $item->_('slug'),
-                            false
+                                false
                             );
                             break;
                         case 'url_productplaatje':
                             $row['url_productplaatje'] = ImageHelper::buildUrl($item->_('image'));
-                            if($item->_('firstImage')) :
+                            if ($item->_('firstImage')) :
                                 $row['url_productplaatje'] = ImageHelper::buildUrl($item->_('firstImage'));
                             endif;
                             break;
                         case 'prijs':
                             $row[$field] = '';
-                            if($this->exportType->_('exportDatafield_'.$field)) :
+                            if ($this->exportType->_('exportDatafield_' . $field)) :
                                 $row = $this->addField(
                                     $row,
                                     $field,
-                                    $item->_($this->exportType->_('exportDatafield_'.$field).'_sale')
+                                    $item->_($this->exportType->_('exportDatafield_' . $field) . '_sale')
                                 );
-                            elseif($this->exportType->_('exportField_'.$field)) :
-                                $row = $this->addField($row, $field, $this->exportType->_('exportField_'.$field));
+                            elseif ($this->exportType->_('exportField_' . $field)) :
+                                $row = $this->addField($row, $field, $this->exportType->_('exportField_' . $field));
                             endif;
                             break;
                         default:
                             $row[$field] = '';
-                            if($this->exportType->_('exportDatafield_'.$field)) :
-                                $callingName = $this->exportType->_('exportDatafield_'.$field);
+                            if ($this->exportType->_('exportDatafield_' . $field)) :
+                                $callingName = $this->exportType->_('exportDatafield_' . $field);
                                 try {
                                     new ObjectId($item->_($callingName));
                                     $datafieldItem = Item::findById($item->_($callingName));
@@ -92,11 +91,11 @@ class BeslistExportHelper extends AbstractExportHelper
                                         $item->_($callingName)
                                     );
                                 }
-                            elseif($this->exportType->_('exportField_'.$field)) :
+                            elseif ($this->exportType->_('exportField_' . $field)) :
                                 $row = $this->addField(
                                     $row,
                                     $field,
-                                    $this->exportType->_('exportField_'.$field)
+                                    $this->exportType->_('exportField_' . $field)
                                 );
                             endif;
                             break;
@@ -110,12 +109,6 @@ class BeslistExportHelper extends AbstractExportHelper
         return ob_get_flush();
     }
 
-    public function setHeaders(): void
-    {
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename='.$this->getFilename('csv'));
-    }
-
     protected function addField(array $row, string $field, string $value): array
     {
         $row[$field] = trim((new Filter())->sanitize(
@@ -124,5 +117,11 @@ class BeslistExportHelper extends AbstractExportHelper
         ));
 
         return $row;
+    }
+
+    public function setHeaders(): void
+    {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('csv'));
     }
 }

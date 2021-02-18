@@ -21,13 +21,11 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
     /**
      * @var array
      */
-    protected $fields;
-
+    protected static $adminFormFields = [];
     /**
      * @var array
      */
-    protected static $adminFormFields = [];
-
+    protected $fields;
     /**
      * @var array
      */
@@ -61,31 +59,18 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
         $this->language = $language;
     }
 
-    public function setFields(array $fields): void
-    {
-        $this->fields = $fields;
-    }
-
-    public function setItems(array $items): void
-    {
-        $this->items = $items;
-    }
-
-    public function setHeaders(): void
-    {
-    }
-
     public static function buildAdminForm(
         ExportTypeForm $form,
         ExportType $item,
         RepositoryInterface $repositories
-    ): void {
+    ): void
+    {
         if (
             $item->getDatagroup() !== ''
             && count($item->getType()::$adminFormFields) > 0
         ) :
             $datafieldOptions = [];
-            $datagroup =  $repositories->datagroup->getById($item->_('datagroup'));
+            $datagroup = $repositories->datagroup->getById($item->_('datagroup'));
             foreach ($datagroup->getDatafields() as $datafieldSet) :
                 if ($datafieldSet['published'] === true) :
                     $datafield = $repositories->datafield->getById($datafieldSet['id']);
@@ -110,6 +95,20 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
         endif;
     }
 
+    public function setFields(array $fields): void
+    {
+        $this->fields = $fields;
+    }
+
+    public function setItems(array $items): void
+    {
+        $this->items = $items;
+    }
+
+    public function setHeaders(): void
+    {
+    }
+
     public function preFindAll(ExportType $exportType): void
     {
     }
@@ -117,6 +116,11 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
     public function setExportType(AbstractCollection $exportType): void
     {
         $this->exportType = $exportType;
+    }
+
+    public function createOutputByIterator(ItemIterator $itemIterator, ExportType $exportType, UrlService $url): string
+    {
+        // TODO: Implement createOutputByIterator() method.
     }
 
     protected function getItemValue(AbstractCollection $item, string $fieldName): string
@@ -151,10 +155,5 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
             '_' .
             $this->language->getLocale() .
             '.' . $extension;
-    }
-
-    public function createOutputByIterator(ItemIterator $itemIterator, ExportType $exportType, UrlService $url): string
-    {
-        // TODO: Implement createOutputByIterator() method.
     }
 }

@@ -28,7 +28,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                 $this->cache->setTimetoLife(
                     (int)(new \DateTime())->modify($exportType->getCachingTime())->format('U')
                 );
-                $cacheKey = $this->cache->getCacheKey('ExportType'.$id);
+                $cacheKey = $this->cache->getCacheKey('ExportType' . $id);
                 $content = $this->cache->get($cacheKey);
             endif;
 
@@ -52,10 +52,35 @@ class IndexController extends AbstractController implements RepositoriesInterfac
         $this->view->disable();
     }
 
+    protected function parseItemsAsIterator(
+        ExportType $exportType,
+        AbstractExportHelperInterface $exportHelper
+    ): string
+    {
+        $datagroupItems = $this->repositories->item->getItemIdsByDatagroupForExportType(
+            $exportType->getDatagroup(),
+            (string)$exportType->getId()
+        );
+
+        if ($exportType->getGetChildrenFrom() !== null) :
+            $this->repositories->item->appendRecursiveChildrenForExportType(
+                $exportType->getGetChildrenFrom(),
+                $datagroupItems
+            );
+        endif;
+
+        return $exportHelper->createOutputByIterator(
+            $datagroupItems,
+            $exportType,
+            $this->url
+        );
+    }
+
     protected function parseItemsAsArray(
         ExportType $exportType,
         AbstractExportHelperInterface $exportHelper
-    ): string {
+    ): string
+    {
         $items = [[]];
         $exportHelper->preFindAll($exportType);
         $datagroupItems = $this->repositories->item->findAll(
@@ -65,7 +90,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
             ]),
             true,
             9999,
-            new FindOrderIterator([new FindOrder('createdAt',-1)])
+            new FindOrderIterator([new FindOrder('createdAt', -1)])
         );
 
         if ($exportType->hasGetChildrenFrom()) :
@@ -86,29 +111,6 @@ class IndexController extends AbstractController implements RepositoriesInterfac
         return $exportHelper->createOutput();
     }
 
-    protected function parseItemsAsIterator(
-        ExportType $exportType,
-        AbstractExportHelperInterface $exportHelper
-    ): string {
-        $datagroupItems = $this->repositories->item->getItemIdsByDatagroupForExportType(
-            $exportType->getDatagroup(),
-            (string)$exportType->getId()
-        );
-
-        if ($exportType->getGetChildrenFrom() !== null) :
-            $this->repositories->item->appendRecursiveChildrenForExportType(
-                $exportType->getGetChildrenFrom(),
-                $datagroupItems
-            );
-        endif;
-
-        return $exportHelper->createOutputByIterator(
-            $datagroupItems,
-            $exportType,
-            $this->url
-        );
-    }
-
     public function ChannelEngineSyncAction(): void
     {
         Item::addFindOrder('channelEngineLastSyncDate', 1);
@@ -121,7 +123,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                 $this->log->write(
                     $item->getId(),
                     Item::class,
-                    'ChannelEngine <b>'.$item->_('name').'</b> synced.'
+                    'ChannelEngine <b>' . $item->_('name') . '</b> synced.'
                 );
             endif;
             $item->set('channelEngineLastSyncDate', time())->save();
@@ -161,7 +163,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
     {
         $datagroup = $this->setting->get('MAILCHIMP_PRODUCT_DATAGROUP');
 
-        Item::addFindOrder('mailChimpLastSyncDate.'.$this->configuration->getLanguageShort(), 1);
+        Item::addFindOrder('mailChimpLastSyncDate.' . $this->configuration->getLanguageShort(), 1);
         Item::setFindValue('outOfStock', ['$in' => ['', null, false]]);
         Item::setFindValue('datagroup', $datagroup);
         $item = Item::findFirst();
@@ -175,14 +177,14 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                 $this->log->write(
                     $item->getId(),
                     Item::class,
-                    'MailChimp product created for <b>'.implode(' > ', $parents).'</b>'
+                    'MailChimp product created for <b>' . implode(' > ', $parents) . '</b>'
                 );
             else :
                 $this->mailchimp->updateProduct($item);
                 $this->log->write(
                     $item->getId(),
                     Item::class,
-                    'MailChimp product updated for <b>'.implode(' > ', $parents).'</b>'
+                    'MailChimp product updated for <b>' . implode(' > ', $parents) . '</b>'
                 );
             endif;
         endif;

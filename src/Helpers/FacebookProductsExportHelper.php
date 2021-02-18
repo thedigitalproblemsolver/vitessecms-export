@@ -12,6 +12,15 @@ use Phalcon\Filter;
 
 class FacebookProductsExportHelper extends AbstractExportHelper
 {
+    protected static $adminFormFields = [
+        'availability',
+        'condition',
+        'description',
+        'title',
+        'price',
+        'brand',
+        //'google_product_category',
+    ];
     protected $fields = [
         'id',
         'gtin',
@@ -26,16 +35,6 @@ class FacebookProductsExportHelper extends AbstractExportHelper
         'brand',
         'age_group',
         'gender',
-    ];
-
-    protected static $adminFormFields = [
-        'availability',
-        'condition',
-        'description',
-        'title',
-        'price',
-        'brand',
-        //'google_product_category',
     ];
 
     public function createOutput(): string
@@ -192,12 +191,6 @@ class FacebookProductsExportHelper extends AbstractExportHelper
         return ob_get_clean();
     }
 
-    public function setHeaders(): void
-    {
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=' . $this->getFilename('xml'));
-    }
-
     protected function addField(array $row, string $field, string $value): array
     {
         $row[$field] = trim((new Filter())->sanitize(
@@ -206,5 +199,11 @@ class FacebookProductsExportHelper extends AbstractExportHelper
         ));
 
         return $row;
+    }
+
+    public function setHeaders(): void
+    {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('xml'));
     }
 }

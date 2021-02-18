@@ -34,11 +34,11 @@ class ModelForm extends AbstractFormWithRepository
                 ->setOptions(ElementHelper::modelIteratorToOptions(
                     $this->repositories->language->findAll(null, false)
                 )
-            )
+                )
         )
-        ->addDate('From', 'date_from')
-        ->addDate('Till', 'date_till')
-        ->addSubmitButton('%CORE_SAVE%');
+            ->addDate('From', 'date_from')
+            ->addDate('Till', 'date_till')
+            ->addSubmitButton('%CORE_SAVE%');
 
         return $this;
     }

@@ -40,12 +40,12 @@ class ExportTypeForm extends AbstractFormWithRepository
     {
         $this->addText('%CORE_NAME%', 'name', (new Attributes())->setRequired(true))
             ->addDropdown(
-            '%ADMIN_DATAGROUP%',
-            'datagroup',
-            (new Attributes())->setOptions(ElementHelper::modelIteratorToOptions(
-                $this->repositories->datagroup->findAll()
-            ))
-        );
+                '%ADMIN_DATAGROUP%',
+                'datagroup',
+                (new Attributes())->setOptions(ElementHelper::modelIteratorToOptions(
+                    $this->repositories->datagroup->findAll()
+                ))
+            );
 
         if ($this->item->getDatagroup() !== '') :
             $items = $this->repositories->item->findAll(new FindValueIterator(
@@ -65,31 +65,31 @@ class ExportTypeForm extends AbstractFormWithRepository
                 ->setRequired(true)
                 ->setOptions(
                     ElementHelper::arrayToSelectOptions([
-                        SitemapExportHelper::class          => '%EXPORT_TYPE_SITEMAP%',
-                        GoogleShoppingExportHelper::class   => '%EXPORT_TYPE_GOOGLE_SHOPPING%',
-                        TradetrackerExportHelper::class     => '%EXPORT_TYPE_TRADETRACKER%',
-                        BeslistExportHelper::class          => '%EXPORT_TYPE_BESLIST%',
-                        FacebookProductsExportHelper::class => '%EXPORT_TYPE_FACEBOOKPRODUCTS%',
-                        RssExportHelper::class              => '%EXPORT_TYPE_RSS%',
-                        EtsyExportHelper::class             => '%EXPORT_TYPE_ETSY%',
-                        AmazonExportHelper::class           => '%EXPORT_TYPE_AMAZON%',
-                    ]
+                            SitemapExportHelper::class => '%EXPORT_TYPE_SITEMAP%',
+                            GoogleShoppingExportHelper::class => '%EXPORT_TYPE_GOOGLE_SHOPPING%',
+                            TradetrackerExportHelper::class => '%EXPORT_TYPE_TRADETRACKER%',
+                            BeslistExportHelper::class => '%EXPORT_TYPE_BESLIST%',
+                            FacebookProductsExportHelper::class => '%EXPORT_TYPE_FACEBOOKPRODUCTS%',
+                            RssExportHelper::class => '%EXPORT_TYPE_RSS%',
+                            EtsyExportHelper::class => '%EXPORT_TYPE_ETSY%',
+                            AmazonExportHelper::class => '%EXPORT_TYPE_AMAZON%',
+                        ]
+                    )
                 )
-            )
         )->addDropdown(
             'Caching time',
             'cachingTime',
             (new Attributes())
                 ->setRequired(true)
                 ->setOptions(ElementHelper::arrayToSelectOptions([
-                    'none'   => 'None',
-                    '-1 day'   => '1 day',
-                    '-1 week'  => '1 week',
+                    'none' => 'None',
+                    '-1 day' => '1 day',
+                    '-1 week' => '1 week',
                     '-2 weeks' => '2 weeks',
                     '-3 weeks' => '3 weeks',
                     '-1 month' => '1 month',
                 ])
-            )
+                )
         );
 
         if ($this->item !== null && $this->item->hasType()) :
@@ -100,11 +100,11 @@ class ExportTypeForm extends AbstractFormWithRepository
 
         if ($this->item->getId()) :
             $languages = $this->repositories->language->findAll();
-            if($languages->count() > 0 ) :
+            if ($languages->count() > 0) :
                 $this->addHtml(
                     $this->view->renderTemplate(
                         'export_type_form_index_list',
-                        $this->configuration->getVendorNameDir().'export/src/Resources/views/admin/',
+                        $this->configuration->getVendorNameDir() . 'export/src/Resources/views/admin/',
                         ['languages' => $languages]
                     )
                 );
@@ -116,7 +116,8 @@ class ExportTypeForm extends AbstractFormWithRepository
         return $this;
     }
 
-    public function setEntity($entity) {
+    public function setEntity($entity)
+    {
         $this->item = $entity;
 
         parent::setEntity($entity);

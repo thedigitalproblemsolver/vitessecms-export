@@ -11,7 +11,7 @@ class RssExportHelper extends AbstractExportHelper
 {
     public function createOutput(): string
     {
-        $channelTitle = $this->exportType->getNameField().' - '.$this->setting->get('WEBSITE_DEFAULT_NAME');
+        $channelTitle = $this->exportType->getNameField() . ' - ' . $this->setting->get('WEBSITE_DEFAULT_NAME');
         $feed = RssFeedFactory::create();
         $channel = RssChannelFactory::create(
             $feed,
@@ -20,8 +20,8 @@ class RssExportHelper extends AbstractExportHelper
         );
 
         /** @var AbstractCollection $item */
-        foreach($this->items as $items) :
-            foreach($items as $item) :
+        foreach ($this->items as $items) :
+            foreach ($items as $item) :
                 RssItemFactory::create($item, $channel, $channelTitle, $this->setting, $this->url);
             endforeach;
         endforeach;

@@ -18,11 +18,11 @@ class AdminmodelController extends AbstractExportController
                 ->setRepositories($this->repositories)
                 ->buildForm()
                 ->renderForm(
-                'admin/export/adminmodel/createExport',
-                'exportForm',
-                true,
-                true
-            )
+                    'admin/export/adminmodel/createExport',
+                    'exportForm',
+                    true,
+                    true
+                )
         );
 
         $this->prepareView();
@@ -34,27 +34,27 @@ class AdminmodelController extends AbstractExportController
             $className = SystemUtil::createNamespaceFromPath($this->request->get('model'));
             /** @var AbstractCollection $className */
             $className::setFindLimit(9999);
-            if(
+            if (
                 !empty($this->request->get('date_from'))
                 && empty($this->request->get('date_till'))
             ) :
-                $className::setFindValue('createdAt',$this->request->get('date_from'), 'greater');
+                $className::setFindValue('createdAt', $this->request->get('date_from'), 'greater');
             endif;
 
-            if(
+            if (
                 !empty($this->request->get('date_till'))
                 && empty($this->request->get('date_from'))
             ) :
-                $className::setFindValue('createdAt',$this->request->get('date_till'), 'smaller');
+                $className::setFindValue('createdAt', $this->request->get('date_till'), 'smaller');
             endif;
 
-            if(
+            if (
                 !empty($this->request->get('date_from'))
                 && !empty($this->request->get('date_till'))
             ):
                 $className::setFindValue(
                     'createdAt',
-                    [$this->request->get('date_from'),$this->request->get('date_till')],
+                    [$this->request->get('date_from'), $this->request->get('date_till')],
                     'between'
                 );
             endif;

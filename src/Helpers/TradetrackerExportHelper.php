@@ -11,11 +11,9 @@ use Phalcon\Filter;
 
 class TradetrackerExportHelper extends AbstractExportHelper
 {
-    protected $fields = [
-        'ID',
+    protected static $adminFormFields = [
         'name',
         'description',
-        'productURL',
         'categoryPath',
         'categories',
         'subcategories',
@@ -31,10 +29,11 @@ class TradetrackerExportHelper extends AbstractExportHelper
         'deliveryCosts',
         'EAN',
     ];
-
-    protected static $adminFormFields = [
+    protected $fields = [
+        'ID',
         'name',
         'description',
+        'productURL',
         'categoryPath',
         'categories',
         'subcategories',
@@ -68,30 +67,30 @@ class TradetrackerExportHelper extends AbstractExportHelper
                 switch ($field) :
                     case 'ID':
                         $row['ID'] = (string)$item->getId();
-                    break;
+                        break;
                     case 'productURL':
                         $row['productURL'] = UtmUtil::appendToUrl(
                             $this->url->getBaseUri() . $item->_('slug'),
-                        false
+                            false
                         );
                         break;
                     case 'price':
                     case 'fromPrice':
                         $row[$field] = '';
-                        if($this->exportType->_('exportDatafield_'.$field)) :
+                        if ($this->exportType->_('exportDatafield_' . $field)) :
                             $row = $this->addField(
                                 $row,
                                 $field,
-                                $item->_($this->exportType->_('exportDatafield_'.$field).'_sale')
+                                $item->_($this->exportType->_('exportDatafield_' . $field) . '_sale')
                             );
-                        elseif($this->exportType->_('exportField_'.$field)) :
-                            $row = $this->addField($row, $field, $this->exportType->_('exportField_'.$field));
+                        elseif ($this->exportType->_('exportField_' . $field)) :
+                            $row = $this->addField($row, $field, $this->exportType->_('exportField_' . $field));
                         endif;
                         break;
                     default:
                         $row[$field] = '';
-                        if($this->exportType->_('exportDatafield_'.$field)) :
-                            $callingName = $this->exportType->_('exportDatafield_'.$field);
+                        if ($this->exportType->_('exportDatafield_' . $field)) :
+                            $callingName = $this->exportType->_('exportDatafield_' . $field);
                             try {
                                 new ObjectId($item->_($callingName));
                                 $datafieldItem = $this->repositories->item->getById($item->_($callingName));
@@ -107,11 +106,11 @@ class TradetrackerExportHelper extends AbstractExportHelper
                                     $item->_($callingName)
                                 );
                             }
-                        elseif($this->exportType->_('exportField_'.$field)) :
+                        elseif ($this->exportType->_('exportField_' . $field)) :
                             $row = $this->addField(
                                 $row,
                                 $field,
-                                $this->exportType->_('exportField_'.$field)
+                                $this->exportType->_('exportField_' . $field)
                             );
                         endif;
                         break;
@@ -124,7 +123,7 @@ class TradetrackerExportHelper extends AbstractExportHelper
                 $image = '';
                 $stockTotal = 0;
                 foreach ($item->_('variations') as $variation) :
-                    if($variation['stock'] > 0 ):
+                    if ($variation['stock'] > 0):
                         $sku = explode('_', $variation['sku']);
                         $color = strtolower($sku[0]);
 
@@ -137,10 +136,10 @@ class TradetrackerExportHelper extends AbstractExportHelper
 
                         $sizes[$color][] = $variation['size'];
                         $stockSizes[$color][] = $variation['stock'];
-                        $image = $this->url->getBaseUri().
-                            'uploads/'.
-                            Di::getDefault()->get('config')->get('account').
-                            '/'.$variation['image'];
+                        $image = $this->url->getBaseUri() .
+                            'uploads/' .
+                            Di::getDefault()->get('config')->get('account') .
+                            '/' . $variation['image'];
                         $ean[$color][] = $variation['ean'];
                         $stockTotal += $variation['stock'];
 
@@ -166,16 +165,16 @@ class TradetrackerExportHelper extends AbstractExportHelper
         return ob_get_flush();
     }
 
+    protected function addField(array $row, string $field, string $value): array
+    {
+        $row[$field] = trim((new Filter())->sanitize($value, 'string'));
+
+        return $row;
+    }
+
     public function setHeaders(): void
     {
         header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename='.$this->getFilename('csv'));
-    }
-
-    protected function addField(array $row, string $field, string $value): array
-    {
-        $row[$field] = trim((new Filter())->sanitize( $value, 'string'));
-
-        return $row;
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('csv'));
     }
 }

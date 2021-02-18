@@ -12,7 +12,9 @@ use VitesseCms\Language\Models\Language;
 
 interface AbstractExportHelperInterface
 {
-    public function setFields( array $fields): void;
+    public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void;
+
+    public function setFields(array $fields): void;
 
     public function setItems(array $items): void;
 
@@ -29,6 +31,4 @@ interface AbstractExportHelperInterface
     public function setExportType(AbstractCollection $exportType): void;
 
     public function preFindAll(ExportType $exportType): void;
-
-    public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void;
 }

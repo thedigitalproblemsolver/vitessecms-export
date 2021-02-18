@@ -9,7 +9,7 @@ class ChannelEngineFactory
 {
     public static function createByItem(Item $item): array
     {
-        if(empty($item->_('ean'))) :
+        if (empty($item->_('ean'))) :
             return [];
         endif;
 
@@ -18,12 +18,12 @@ class ChannelEngineFactory
         $baseUri = $di->get('url')->getBaseUri();
         $uploadUri = $di->get('configuration')->getUploadUri();
         $baseProduct = [
-            'Name'          => $item->_('name'),
-            'Description'   => '',
-            'Brand'         => 'CraftBeerShirts',
-            'Price'         => $item->_('price_sale'),
-            'Url'           => $baseUri.$item->_('slug'),
-            'Category'      => 'Clothing > Women > Tops & T-Shirts > T-Shirts',
+            'Name' => $item->_('name'),
+            'Description' => '',
+            'Brand' => 'CraftBeerShirts',
+            'Price' => $item->_('price_sale'),
+            'Url' => $baseUri . $item->_('slug'),
+            'Category' => 'Clothing > Women > Tops & T-Shirts > T-Shirts',
             'CategoryTrail' => 'Clothing > Women > Tops & T-Shirts > T-Shirts',
         ];
 
@@ -31,7 +31,7 @@ class ChannelEngineFactory
             $product = $baseProduct;
             $product += [
                 'MerchantProductNo' => $item->_('ean'),
-                'ImageUrl'          => $uploadUri.$item->_('image'),
+                'ImageUrl' => $uploadUri . $item->_('image'),
             ];
             $products[] = $product;
 
@@ -46,17 +46,17 @@ class ChannelEngineFactory
                     $imageUrl = '';
                     foreach ($item->_('variationsTemplate')['colors'] as $colorOptions) :
                         if ($colorOptions['color'] === $variation['color']) :
-                            $imageUrl = $uploadUri.$colorOptions['image'];
+                            $imageUrl = $uploadUri . $colorOptions['image'];
                         endif;
                     endforeach;
 
                     $product += [
-                        'MerchantProductNo'         => $variation['ean'],
-                        'ParentMerchantProductNo'   => $item->_('ean'),
-                        'Size'                      => $variation['size'],
-                        'Color'                     => implode(' ', $color),
-                        'Stock'                     => $variation['stock'],
-                        'ImageUrl'                  => $imageUrl,
+                        'MerchantProductNo' => $variation['ean'],
+                        'ParentMerchantProductNo' => $item->_('ean'),
+                        'Size' => $variation['size'],
+                        'Color' => implode(' ', $color),
+                        'Stock' => $variation['stock'],
+                        'ImageUrl' => $imageUrl,
                         'ManufacturerProductNumber' => $variation['sku'],
                         'Ean' => $variation['ean']
                     ];
@@ -73,7 +73,7 @@ class ChannelEngineFactory
             $product = $baseProduct;
             $product += [
                 'MerchantProductNo' => $item->_('ean'),
-                'ImageUrl'          => $uploadUri.$item->_('image'),
+                'ImageUrl' => $uploadUri . $item->_('image'),
             ];
             $products[] = $product;
         endif;

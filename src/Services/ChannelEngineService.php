@@ -10,7 +10,8 @@ use ChannelEngine\Merchant\ApiClient\Model\SingleOfMerchantProductResponse;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Export\Factories\ChannelEngineFactory;
 
-class ChannelEngineService {
+class ChannelEngineService
+{
     protected $apiConfig;
 
     protected $productApi;
@@ -24,7 +25,8 @@ class ChannelEngineService {
         $this->productApi = new ProductApi(null, $this->apiConfig);
     }
 
-    public function getProduct(string $id): ?SingleOfMerchantProductResponse {
+    public function getProduct(string $id): ?SingleOfMerchantProductResponse
+    {
         try {
             return $this->productApi->productGetByMerchantProductNo($id);
         } catch (ApiException $e) {
@@ -32,7 +34,8 @@ class ChannelEngineService {
         }
     }
 
-    public function getProducts(): ?CollectionOfMerchantProductResponse {
+    public function getProducts(): ?CollectionOfMerchantProductResponse
+    {
         try {
             return $this->productApi->productGetByFilter(null, null);
         } catch (ApiException $e) {

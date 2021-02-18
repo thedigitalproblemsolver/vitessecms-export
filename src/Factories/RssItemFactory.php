@@ -18,11 +18,12 @@ class RssItemFactory
         string $channelTitle,
         SettingService $setting,
         UrlService $url
-    ): ItemInterface {
+    ): ItemInterface
+    {
         UtmUtil::setSource('rss_feed');
         UtmUtil::setMedium($channelTitle);
         UtmUtil::setCampaign($item->_('name'));
-        $link = UtmUtil::appendToUrl($url->getBaseUri().$item->_('slug'));
+        $link = UtmUtil::appendToUrl($url->getBaseUri() . $item->_('slug'));
 
         return (new Item())
             ->title($item->_('name'))
@@ -31,7 +32,7 @@ class RssItemFactory
             ->url($link)// utemen
             ->author($setting->get('WEBSITE_DEFAULT_NAME'))
             ->pubDate(strtotime($item->_('createdAt')))
-            ->guid($url->getBaseUri().$item->_('slug'), true)
+            ->guid($url->getBaseUri() . $item->_('slug'), true)
             ->preferCdata(true)// By this, title and description become CDATA wrapped HTML.
             ->appendTo($channel);
     }

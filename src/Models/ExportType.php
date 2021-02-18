@@ -40,7 +40,7 @@ class ExportType extends AbstractCollection
 
     public function getDatagroup(): string
     {
-        return $this->datagroup??'';
+        return $this->datagroup ?? '';
     }
 
     public function getType(): ?string
@@ -80,18 +80,18 @@ class ExportType extends AbstractCollection
     {
         parent::afterFetch();
 
-        if(AdminUtil::isAdminPage()) :
+        if (AdminUtil::isAdminPage()) :
             //TODO move to mustache
             $this->adminListName = '<a 
-                href="/export/index/index/'.(string)$this->getId().'" 
+                href="/export/index/index/' . (string)$this->getId() . '" 
                 class="fa fa-external-link"
                 target="_blank"
                 ></a> 
                 <a 
-                    href="/admin/export/admincontent/edit/'.(string)$this->getId().'"
+                    href="/admin/export/admincontent/edit/' . (string)$this->getId() . '"
                     class="openmodal"
-                >'.
-                    $this->getNameField().
+                >' .
+                $this->getNameField() .
                 '</a>';
         endif;
     }

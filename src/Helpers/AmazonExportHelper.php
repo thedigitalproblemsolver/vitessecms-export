@@ -25,17 +25,6 @@ class AmazonExportHelper extends AbstractExportHelper
      */
     protected $discountService;
 
-    public function setDiscountHelper(DiscountHelper $discountHelper): AbstractExportHelperInterface
-    {
-        $this->discountService = $discountHelper;
-    }
-
-    public function setHeaders(): void
-    {
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename='.$this->getFilename('csv'));
-    }
-
     public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void
     {
         parent::buildAdminForm($form, $item, $repositories);
@@ -48,6 +37,17 @@ class AmazonExportHelper extends AbstractExportHelper
                 [$item->_('AmazonBrowseNode')]
             ))
         );
+    }
+
+    public function setDiscountHelper(DiscountHelper $discountHelper): AbstractExportHelperInterface
+    {
+        $this->discountService = $discountHelper;
+    }
+
+    public function setHeaders(): void
+    {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('csv'));
     }
 
     public function createOutput(): string
@@ -86,22 +86,12 @@ class AmazonExportHelper extends AbstractExportHelper
         return '';
     }
 
-    public function preFindAll(ExportType $exportType): void
-    {
-        $parent = $this->repositories->item->findFirst((new FindValueIterator(
-            [new FindValue('AmazonBrowseNode',$exportType->_('AmazonBrowseNode'))]
-        )));
-
-        if ($parent !== null) :
-            Item::setFindValue('parentId', (string)$parent->getId());
-        endif;
-    }
-
     protected function buildParentRow(
         AbstractCollection $item,
         string $gender,
         Item $parent
-    ): array {
+    ): array
+    {
         $return = [
             '',
             '',
@@ -159,7 +149,8 @@ class AmazonExportHelper extends AbstractExportHelper
         string $gender,
         string $image,
         Item $parent
-    ): array {
+    ): array
+    {
         $size = $this->getSize($variation['size']);
         $material = 'Cotton';
 
@@ -219,6 +210,25 @@ class AmazonExportHelper extends AbstractExportHelper
         return $return;
     }
 
+    protected function getSize(string $size): string
+    {
+        if (isset(FieldSizeAndColorEnum::sizes[$size])) :
+            return FieldSizeAndColorEnum::sizes[$size];
+        endif;
+
+        die('Base size : ' . $size . ' unknow');
+
+        /*
+            Medium
+            Large
+            X-Large
+            XX-Large
+            XXX-Large
+            XXXX-Large
+            XXXXX-Large
+         */
+    }
+
     protected function getColorBySku(string $sku): string
     {
         $color = array_reverse(explode('_', $sku));
@@ -262,7 +272,7 @@ class AmazonExportHelper extends AbstractExportHelper
                 return 'White';
         }
 
-        die('Base color : '.$color.' unknow');
+        die('Base color : ' . $color . ' unknow');
 
         /*
             Beige
@@ -283,22 +293,14 @@ class AmazonExportHelper extends AbstractExportHelper
         */
     }
 
-    protected function getSize(string $size): string
+    public function preFindAll(ExportType $exportType): void
     {
-        if (isset(FieldSizeAndColorEnum::sizes[$size])) :
-            return FieldSizeAndColorEnum::sizes[$size];
+        $parent = $this->repositories->item->findFirst((new FindValueIterator(
+            [new FindValue('AmazonBrowseNode', $exportType->_('AmazonBrowseNode'))]
+        )));
+
+        if ($parent !== null) :
+            Item::setFindValue('parentId', (string)$parent->getId());
         endif;
-
-        die('Base size : '.$size.' unknow');
-
-        /*
-            Medium
-            Large
-            X-Large
-            XX-Large
-            XXX-Large
-            XXXX-Large
-            XXXXX-Large
-         */
     }
 }

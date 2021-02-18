@@ -76,7 +76,7 @@ class SitemapExportHelper extends AbstractExportHelper
             $item = $this->repositories->item->getById((string)$itemId->getId(), true, false);
 
             $url = new Url($urlService->getBaseUri() . $item->getSlug());
-            $url->setLastMod($item->getUpdatedOn()??$item->getCreateDate());
+            $url->setLastMod($item->getUpdatedOn() ?? $item->getCreateDate());
             $url->setChangeFreq($exportType->_('frequency'));
             $url->setPriority($exportType->_('priority'));
 

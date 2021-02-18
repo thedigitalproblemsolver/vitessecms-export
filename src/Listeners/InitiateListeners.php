@@ -3,13 +3,11 @@
 namespace VitesseCms\Export\Listeners;
 
 use Phalcon\Events\Manager;
-use VitesseCms\Export\Controllers\AdmincontentController;
 
-class InitiateAdminListeners
+class InitiateListeners
 {
     public static function setListeners(Manager $eventsManager): void
     {
         $eventsManager->attach('adminMenu', new AdminMenuListener());
-        $eventsManager->attach(AdmincontentController::class, new AdmincontentControllerListener());
     }
 }

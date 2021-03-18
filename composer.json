@@ -27,7 +27,7 @@
     "vitessecms/media": "~0.0.3",
     "vitessecms/sef": "~0.0.2",
     "vitessecms/setting": "~0.0.7",
-    "vitessecms/core": "~0.0.7",
+    "vitessecms/core": "~0.0.8",
     "vitessecms/form": "~0.0.10",
     "vitessecms/datafield": "~0.0.7",
     "vitessecms/datagroup": "~0.0.3"

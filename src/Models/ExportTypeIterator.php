@@ -2,7 +2,9 @@
 
 namespace VitesseCms\Export\Models;
 
-class ExportTypeIterator extends \ArrayIterator
+use ArrayIterator;
+
+class ExportTypeIterator extends ArrayIterator
 {
     public function __construct(array $products)
     {

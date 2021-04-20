@@ -2,6 +2,7 @@
 
 namespace VitesseCms\Export\Helpers;
 
+use DateTime;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Core\Services\UrlService;
@@ -15,6 +16,7 @@ use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Form\Helpers\ElementHelper;
 use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Language\Models\Language;
+use function is_array;
 
 abstract class AbstractExportHelper extends AbstractInjectable implements AbstractExportHelperInterface
 {
@@ -140,7 +142,7 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
         endif;
 
         $return = $item->_($fieldName, $this->language->_('short'));
-        if (\is_array($return)) :
+        if (is_array($return)) :
             return $return['name'][$this->language->_('short')];
         endif;
 
@@ -149,7 +151,7 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
 
     protected function getFilename(string $extension): string
     {
-        return (new \DateTime())->format('Y-m-d-H-i-s') .
+        return (new DateTime())->format('Y-m-d-H-i-s') .
             '_' .
             'item' .
             '_' .

@@ -2,6 +2,7 @@
 
 namespace VitesseCms\Export\Helpers;
 
+use Exception;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Media\Helpers\ImageHelper;
@@ -84,7 +85,7 @@ class BeslistExportHelper extends AbstractExportHelper
                                         $field,
                                         $datafieldItem->_('name')
                                     );
-                                } catch (\Exception $e) {
+                                } catch (Exception $e) {
                                     $row = $this->addField(
                                         $row,
                                         $field,

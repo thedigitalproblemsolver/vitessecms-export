@@ -2,6 +2,7 @@
 
 namespace VitesseCms\Export\Controllers;
 
+use DateTime;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Core\AbstractController;
 use VitesseCms\Core\Helpers\ItemHelper;
@@ -26,7 +27,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
             $content = false;
             if ($exportType->hasCachingTime()) :
                 $this->cache->setTimetoLife(
-                    (int)(new \DateTime())->modify($exportType->getCachingTime())->format('U')
+                    (int)(new DateTime())->modify($exportType->getCachingTime())->format('U')
                 );
                 $cacheKey = $this->cache->getCacheKey('ExportType' . $id);
                 $content = $this->cache->get($cacheKey);

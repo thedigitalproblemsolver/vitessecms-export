@@ -2,6 +2,7 @@
 
 namespace VitesseCms\Export\Helpers;
 
+use DateTime;
 use PhpCsFixer\Tokenizer\Transformer\AttributeTransformer;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Database\AbstractCollection;
@@ -202,8 +203,8 @@ class AmazonExportHelper extends AbstractExportHelper
                     $return[] = '';
                 endfor;
                 $return[] = DiscountHelper::calculateFinalPrice($discount, $item->_('price_sale'));
-                $return[] = (new \DateTime())->modify('-1 day')->format('Y-m-d');
-                $return[] = (new \DateTime())->modify('+1 year')->format('Y-m-d');
+                $return[] = (new DateTime())->modify('-1 day')->format('Y-m-d');
+                $return[] = (new DateTime())->modify('+1 year')->format('Y-m-d');
             endif;
         endif;
 

@@ -24,7 +24,8 @@ class IndexController extends AbstractController implements RepositoriesInterfac
             $class = $exportType->getTypeClass();
             $exportHelper = new $class($this->configuration->getLanguage(), $this->repositories);
 
-            $content = false;
+            $content = null;
+            $cacheKey = null;
             if ($exportType->hasCachingTime()) :
                 $this->cache->setTimetoLife(
                     (int)(new DateTime())->modify($exportType->getCachingTime())->format('U')
@@ -33,7 +34,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                 $content = $this->cache->get($cacheKey);
             endif;
 
-            if (!$content) :
+            if ($content === null) :
                 switch ($exportType->getType()):
                     case SitemapExportHelper::class:
                         $content = $this->parseItemsAsIterator($exportType, $exportHelper);
@@ -46,6 +47,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                     $this->cache->save($cacheKey, $content);
                 endif;
             endif;
+
             $exportHelper->setHeaders();
             echo $content;
         endif;
@@ -63,7 +65,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
             (string)$exportType->getId()
         );
 
-        if ($exportType->getGetChildrenFrom() !== null) :
+        if (!empty($exportType->getGetChildrenFrom())) :
             $this->repositories->item->appendRecursiveChildrenForExportType(
                 $exportType->getGetChildrenFrom(),
                 $datagroupItems
@@ -130,36 +132,9 @@ class IndexController extends AbstractController implements RepositoriesInterfac
             $item->set('channelEngineLastSyncDate', time())->save();
         endif;
 
-        //https://craftbeershirts.net/export/index/channelenginesync/
-
-        /*        $product = $this->channelEngine->getProduct((string)$item->getId());
-                echo '<pre>';
-                if($product === null) {*/
-
-        //https://craftbeershirts.nl/Admin/content/adminitem/edit/5b511039583b414f5a276633
-        //$item = Item::findById('5b511039583b414f5a276633');
-        //$this->channelEngine->createOrUpdateProduct($item);
-
-        //https://craftbeershirts.nl/Admin/content/adminitem/edit/5b1bbfc7583b41334f5ce3df
-        /*$item = Item::findById('5b1bbfc7583b41334f5ce3df');
-        $this->channelEngine->createOrUpdateProduct($item);*/
-
-        /*$products = $this->channelEngine->getProducts();
-        foreach ($products->getContent() as $product) :
-            var_dump($this->channelEngine->deleteProduct($product->getMerchantProductNo()));
-        endforeach;*/
-
-        //$this->channelEngine->deleteProduct('5b511039583b414f5a2');
-        /*} else {
-            $this->channelEngine->updateProduct($item, $product);
-        }*/
-
-        //var_dump('klaar');
         die();
     }
-
-    //http://new.craftbeershirts.net/export/index/mailchimpsync/
-    //https://craftbeershirts.net/export/index/mailchimpsync/
+    
     public function MailChimpSyncAction(): void
     {
         $datagroup = $this->setting->get('MAILCHIMP_PRODUCT_DATAGROUP');

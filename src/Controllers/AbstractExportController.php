@@ -2,10 +2,12 @@
 
 namespace VitesseCms\Export\Controllers;
 
+use DateTime;
 use VitesseCms\Admin\AbstractAdminController;
 use VitesseCms\Export\Helpers\AbstractExportHelperInterface;
 use VitesseCms\Export\Repositories\RepositoriesInterface;
 use VitesseCms\Language\Models\Language;
+use function get_class;
 
 abstract class AbstractExportController extends AbstractAdminController implements RepositoriesInterface
 {
@@ -20,9 +22,9 @@ abstract class AbstractExportController extends AbstractAdminController implemen
         $exportHelper->setItems($items);
         $exportHelper->setHeaders();
         $exportHelper->createOutput(
-            (new \DateTime())->format('Y-m-d-H-i-s') .
+            (new DateTime())->format('Y-m-d-H-i-s') .
             '_' .
-            \get_class($items[0]) .
+            get_class($items[0]) .
             '_' .
             $language->getLocale() .
             '.' . $type

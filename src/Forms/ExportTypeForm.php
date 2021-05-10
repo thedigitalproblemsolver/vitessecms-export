@@ -105,7 +105,10 @@ class ExportTypeForm extends AbstractFormWithRepository
                     $this->view->renderTemplate(
                         'export_type_form_index_list',
                         $this->configuration->getVendorNameDir() . 'export/src/Resources/views/admin/',
-                        ['languages' => $languages]
+                        [
+                            'languages' => $languages,
+                            'domain' => $this->url->getBaseUri()
+                        ]
                     )
                 );
             endif;

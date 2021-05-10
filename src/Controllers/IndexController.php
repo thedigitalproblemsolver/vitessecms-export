@@ -134,7 +134,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
 
         die();
     }
-    
+
     public function MailChimpSyncAction(): void
     {
         $datagroup = $this->setting->get('MAILCHIMP_PRODUCT_DATAGROUP');

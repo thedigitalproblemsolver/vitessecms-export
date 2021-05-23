@@ -29,7 +29,7 @@
     "vitessecms/setting": "~0.2.1",
     "vitessecms/core": "~0.2.5",
     "vitessecms/form": "~0.2.2",
-    "vitessecms/datafield": "~0.2.4",
+    "vitessecms/datafield": "~0.2.5",
     "vitessecms/datagroup": "~0.2.3",
     "vitessecms/communication": "~0.2.4"
   }

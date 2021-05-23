@@ -3,6 +3,7 @@
 namespace VitesseCms\Export\Helpers;
 
 use DateTime;
+use VitesseCms\Content\Fields\Model;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Core\Services\UrlService;
@@ -131,7 +132,7 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
             $datafield = $this->repositories->datafield->findFirst(
                 new FindValueIterator([new FindValue('calling_name', $fieldName)])
             );
-            if ($datafield && $datafield->getFieldType() === 'FieldModel') :
+            if ($datafield && $datafield->getType() === Model::class) :
                 /** @var AbstractCollection $className */
                 $className = $datafield->getModel();
                 /** @var AbstractCollection $model */

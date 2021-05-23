@@ -3,7 +3,6 @@
 namespace VitesseCms\Export\Helpers;
 
 use DateTime;
-use PhpCsFixer\Tokenizer\Transformer\AttributeTransformer;
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Database\Models\FindValue;
@@ -11,11 +10,11 @@ use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\RepositoryInterface;
-use VitesseCms\Datafield\Enums\FieldAmazonEnum;
-use VitesseCms\Datafield\Enums\FieldSizeAndColorEnum;
+use VitesseCms\Shop\Enums\AmazonEnum;
 use VitesseCms\Form\Helpers\ElementHelper;
 use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Media\Helpers\ImageHelper;
+use VitesseCms\Shop\Enums\SizeAndColorEnum;
 use VitesseCms\Shop\Helpers\DiscountHelper;
 use VitesseCms\Shop\Models\Discount;
 
@@ -34,7 +33,7 @@ class AmazonExportHelper extends AbstractExportHelper
             'Amazon Browse Node',
             'AmazonBrowseNode',
             (new Attributes())->setRequired(true)->setOptions(ElementHelper::arrayToSelectOptions(
-                FieldAmazonEnum::nodes,
+                AmazonEnum::nodes,
                 [$item->_('AmazonBrowseNode')]
             ))
         );
@@ -213,8 +212,8 @@ class AmazonExportHelper extends AbstractExportHelper
 
     protected function getSize(string $size): string
     {
-        if (isset(FieldSizeAndColorEnum::sizes[$size])) :
-            return FieldSizeAndColorEnum::sizes[$size];
+        if (isset(SizeAndColorEnum::sizes[$size])) :
+            return SizeAndColorEnum::sizes[$size];
         endif;
 
         die('Base size : ' . $size . ' unknow');

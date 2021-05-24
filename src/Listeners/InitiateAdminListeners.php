@@ -4,6 +4,8 @@ namespace VitesseCms\Export\Listeners;
 
 use Phalcon\Events\Manager;
 use VitesseCms\Export\Controllers\AdmincontentController;
+use VitesseCms\Export\Listeners\Admin\AdminMenuListener;
+use VitesseCms\Export\Listeners\Controllers\AdmincontentControllerListener;
 
 class InitiateAdminListeners
 {

@@ -3,6 +3,7 @@
 namespace VitesseCms\Export\Listeners;
 
 use Phalcon\Events\Manager;
+use VitesseCms\Export\Listeners\Admin\AdminMenuListener;
 
 class InitiateListeners
 {

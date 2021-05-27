@@ -10,11 +10,8 @@ class AdminMenuListener
 {
     public function AddChildren(Event $event, AdminMenu $adminMenu): void
     {
-        if ($adminMenu->getUser()->getPermissionRole() === 'superadmin') :
-            $children = new AdminMenuNavBarChildren();
-            $children->addChild('Export', 'admin/export/adminindex/index');
-
-            $adminMenu->addDropdown('System', $children);
-        endif;
+        $children = new AdminMenuNavBarChildren();
+        $children->addChild('Export', 'admin/export/adminindex/index');
+        $adminMenu->addDropdown('System', $children);
     }
 }

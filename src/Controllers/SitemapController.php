@@ -7,7 +7,6 @@ use VitesseCms\Core\AbstractController;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Helpers\SitemapExportHelper;
-use VitesseCms\Export\Models\ExportType;
 use Thepixeldeveloper\Sitemap\Output;
 use Thepixeldeveloper\Sitemap\Sitemap;
 use Thepixeldeveloper\Sitemap\SitemapIndex;

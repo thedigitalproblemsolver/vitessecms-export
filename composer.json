@@ -24,7 +24,7 @@
     "channelengine/merchant-api-client-php": "^2.6",
     "inakiabt/etsy-php": "^0.11.0",
     "vitessecms/language": "~0.2.3",
-    "vitessecms/media": "~0.2.8",
+    "vitessecms/media": "~0.2.9",
     "vitessecms/sef": "~0.2.1",
     "vitessecms/setting": "~0.2.5",
     "vitessecms/core": "~0.2.16",

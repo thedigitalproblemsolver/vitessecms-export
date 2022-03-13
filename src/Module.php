@@ -17,7 +17,7 @@ class Module extends AbstractModule
 {
     public function registerServices(DiInterface $di, string $string = null)
     {
-        $di->setShared('channelEngine', new ChannelEngineService());
+        //$di->setShared('channelEngine', new ChannelEngineService());
         $di->setShared('mailchimp', new MailchimpService(
             $di->get('session'),
             $di->get('setting'),

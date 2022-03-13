@@ -114,7 +114,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
         return $exportHelper->createOutput();
     }
 
-    public function ChannelEngineSyncAction(): void
+    /*public function ChannelEngineSyncAction(): void
     {
         Item::addFindOrder('channelEngineLastSyncDate', 1);
         Item::setFindValue('outOfStock', ['$in' => ['', null, false]]);
@@ -133,7 +133,7 @@ class IndexController extends AbstractController implements RepositoriesInterfac
         endif;
 
         die();
-    }
+    }*/
 
     public function MailChimpSyncAction(): void
     {

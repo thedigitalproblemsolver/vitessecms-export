@@ -2,9 +2,6 @@
 
 namespace VitesseCms\Export\Forms;
 
-use VitesseCms\Content\Models\Item;
-use VitesseCms\Datagroup\Models\Datagroup;
-use VitesseCms\Database\Interfaces\BaseCollectionInterface;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Helpers\AmazonExportHelper;
@@ -19,10 +16,8 @@ use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Form\AbstractFormWithRepository;
 use VitesseCms\Form\Helpers\ElementHelper;
-use VitesseCms\Form\AbstractForm;
 use VitesseCms\Form\Interfaces\FormWithRepositoryInterface;
 use VitesseCms\Form\Models\Attributes;
-use VitesseCms\Language\Models\Language;
 
 class ExportTypeForm extends AbstractFormWithRepository
 {
@@ -50,7 +45,10 @@ class ExportTypeForm extends AbstractFormWithRepository
         if ($this->item->getDatagroup() !== '') :
             $items = $this->repositories->item->findAll(new FindValueIterator(
                 [new FindValue('datagroup', $this->item->getDatagroup())]
-            ));
+            ),
+                true,
+                999
+            );
             $this->addDropdown(
                 '%EXPORT_INCLUDE_CHILDREN_FROM_ITEM%',
                 'getChildrenFrom',

@@ -3,7 +3,7 @@
 namespace VitesseCms\Export\Factories;
 
 use VitesseCms\Content\Models\Item;
-use Phalcon\Di;
+use Phalcon\Di\Di;
 
 class ChannelEngineFactory
 {

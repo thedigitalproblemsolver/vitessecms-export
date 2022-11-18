@@ -10,7 +10,7 @@ use VitesseCms\Export\Repositories\ExportTypeRepository;
 use VitesseCms\Export\Repositories\ItemRepository;
 use VitesseCms\Export\Repositories\RepositoryCollection;
 use VitesseCms\Export\Services\ChannelEngineService;
-use Phalcon\DiInterface;
+use Phalcon\Di\DiInterface;
 use VitesseCms\Language\Repositories\LanguageRepository;
 
 class Module extends AbstractModule

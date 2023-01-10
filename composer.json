@@ -30,11 +30,11 @@
     "vitessecms/media": "~0.2.12",
     "vitessecms/sef": "~0.2.2",
     "vitessecms/setting": "~0.2.6",
-    "vitessecms/core": "~0.2.25",
+    "vitessecms/core": "~0.3.0",
     "vitessecms/form": "~0.2.10",
-    "vitessecms/datafield": "~0.2.13",
-    "vitessecms/datagroup": "~0.2.11",
-    "vitessecms/communication": "~0.2.14",
-    "vitessecms/database": "~0.2.6"
+    "vitessecms/datafield": "~0.3.0",
+    "vitessecms/datagroup": "~0.3.0",
+    "vitessecms/communication": "~0.3.1",
+    "vitessecms/database": "~0.3.0"
   }
 }

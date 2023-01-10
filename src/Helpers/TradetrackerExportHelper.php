@@ -7,7 +7,7 @@ use VitesseCms\Content\Models\Item;
 use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Sef\Utils\UtmUtil;
 use MongoDB\BSON\ObjectId;
-use Phalcon\Di;
+use Phalcon\Di\Di;
 use Phalcon\Filter;
 
 class TradetrackerExportHelper extends AbstractExportHelper
@@ -166,16 +166,16 @@ class TradetrackerExportHelper extends AbstractExportHelper
         return ob_get_flush();
     }
 
+    public function setHeaders(): void
+    {
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename=' . $this->getFilename('csv'));
+    }
+
     protected function addField(array $row, string $field, string $value): array
     {
         $row[$field] = trim((new Filter())->sanitize($value, 'string'));
 
         return $row;
-    }
-
-    public function setHeaders(): void
-    {
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename=' . $this->getFilename('csv'));
     }
 }

@@ -3,7 +3,7 @@
 namespace VitesseCms\Export\Helpers;
 
 use VitesseCms\Shop\Helpers\EtsyHelper;
-use Phalcon\Di;
+use Phalcon\Di\Di;
 
 //TODO to shop and listener
 class EtsyExportHelper extends AbstractExportHelper

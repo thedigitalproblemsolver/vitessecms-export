@@ -14,7 +14,7 @@ use VitesseCms\Shop\Enums\AmazonEnum;
 use VitesseCms\Form\Helpers\ElementHelper;
 use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Media\Helpers\ImageHelper;
-use VitesseCms\Shop\Enums\SizeAndColorEnum;
+use VitesseCms\Shop\Enum\SizeAndColorEnum;
 use VitesseCms\Shop\Helpers\DiscountHelper;
 use VitesseCms\Shop\Models\Discount;
 

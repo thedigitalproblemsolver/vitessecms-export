@@ -9,7 +9,7 @@ use VitesseCms\Sef\Utils\UtmUtil;
 use VitesseCms\Shop\Helpers\DiscountHelper;
 use VitesseCms\Shop\Models\Discount;
 use VitesseCms\Shop\Models\Shipping;
-use Phalcon\Di;
+use Phalcon\Di\Di;
 use Phalcon\Filter;
 
 class GoogleShoppingExportHelper extends AbstractExportHelper

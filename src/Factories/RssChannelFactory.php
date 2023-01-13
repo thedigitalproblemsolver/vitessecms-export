@@ -3,7 +3,7 @@
 namespace VitesseCms\Export\Factories;
 
 use VitesseCms\Setting\Services\SettingService;
-use Phalcon\Di;
+use Phalcon\Di\Di;
 use Suin\RSSWriter\Channel;
 use DateTime;
 use Suin\RSSWriter\ChannelInterface;
@@ -12,10 +12,10 @@ use Suin\RSSWriter\FeedInterface;
 class RssChannelFactory
 {
     public static function create(
-        FeedInterface $feed,
-        string $channelTitle,
+        FeedInterface  $feed,
+        string         $channelTitle,
         SettingService $setting,
-        string $channelDescription = ''
+        string         $channelDescription = ''
     ): ChannelInterface
     {
         $di = Di::getDefault();

@@ -2,10 +2,14 @@
   "name": "vitessecms/export",
   "type": "library",
   "description": "Export module for VitesseCms",
-  "keywords": ["php","phalcon","vitessecms"],
+  "keywords": [
+    "php",
+    "phalcon",
+    "vitessecms"
+  ],
   "homepage": "https://github.com/thedigitalproblemsolver/VitesseCMS",
   "license": "GPL-2.0-or-later",
-  "version": "0.2.8",
+  "version": "0.3.0",
   "authors": [
     {
       "name": "Jasper Jaklofsky",
@@ -22,15 +26,15 @@
     "lukesnowden/google-shopping-feed": "^2.0",
     "suin/php-rss-writer": "^1.6",
     "inakiabt/etsy-php": "^0.11.0",
-    "vitessecms/language": "~0.2.3",
-    "vitessecms/media": "~0.2.11",
-    "vitessecms/sef": "~0.2.1",
-    "vitessecms/setting": "~0.2.5",
-    "vitessecms/core": "~0.2.21",
-    "vitessecms/form": "~0.2.8",
-    "vitessecms/datafield": "~0.2.13",
-    "vitessecms/datagroup": "~0.2.10",
-    "vitessecms/communication": "~0.2.12",
-    "vitessecms/database": "~0.2.5"
+    "vitessecms/language": "~0.3.0",
+    "vitessecms/media": "~0.3.0",
+    "vitessecms/sef": "~0.3.0",
+    "vitessecms/setting": "~0.3.0",
+    "vitessecms/core": "~0.3.0",
+    "vitessecms/form": "~0.3.0",
+    "vitessecms/datafield": "~0.3.0",
+    "vitessecms/datagroup": "~0.3.0",
+    "vitessecms/communication": "~0.3.1",
+    "vitessecms/database": "~0.3.0"
   }
 }

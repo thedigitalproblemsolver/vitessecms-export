@@ -36,6 +36,5 @@
     "vitessecms/datagroup": "~0.3.0",
     "vitessecms/communication": "~0.3.2",
     "vitessecms/database": "~0.3.4"
-  },
-  
+  }
 }

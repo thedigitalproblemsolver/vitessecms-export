@@ -29,10 +29,10 @@
     "vitessecms/language": "~0.3.4",
     "vitessecms/media": "~0.4.1",
     "vitessecms/sef": "~0.3.1",
-    "vitessecms/setting": "~0.3.1",
+    "vitessecms/setting": "~0.3.2",
     "vitessecms/core": "~0.4.2",
     "vitessecms/form": "~0.4.1",
-    "vitessecms/datafield": "~0.3.1",
+    "vitessecms/datafield": "~0.3.2",
     "vitessecms/datagroup": "~0.4.0",
     "vitessecms/communication": "~0.4.0",
     "vitessecms/database": "~0.3.4"

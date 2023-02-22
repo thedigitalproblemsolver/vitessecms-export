@@ -4,7 +4,9 @@ namespace VitesseCms\Export\Listeners;
 
 use VitesseCms\Core\Interfaces\InitiateListenersInterface;
 use VitesseCms\Core\Interfaces\InjectableInterface;
+use VitesseCms\Export\Enums\ExportTypeEnums;
 use VitesseCms\Export\Listeners\Admin\AdminMenuListener;
+use VitesseCms\Export\Repositories\ExportTypeRepository;
 
 class InitiateListeners implements InitiateListenersInterface
 {
@@ -13,5 +15,6 @@ class InitiateListeners implements InitiateListenersInterface
         if($di->user->hasAdminAccess()) :
             $di->eventsManager->attach('adminMenu', new AdminMenuListener());
         endif;
+        $di->eventsManager->attach(ExportTypeEnums::SERVICE_LISTENER->value, new ExportTypeListener(new ExportTypeRepository()));
     }
 }

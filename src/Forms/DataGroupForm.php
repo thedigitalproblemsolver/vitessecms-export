@@ -10,11 +10,6 @@ use VitesseCms\Form\Models\Attributes;
 
 class DataGroupForm extends AbstractFormWithRepository
 {
-    /**
-     * @var RepositoriesInterface
-     */
-    protected $repositories;
-
     public function buildForm(): FormWithRepositoryInterface
     {
         $this->addDropdown(

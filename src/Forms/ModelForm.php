@@ -11,11 +11,6 @@ use VitesseCms\Core\Utils\SystemUtil;
 
 class ModelForm extends AbstractFormWithRepository
 {
-    /**
-     * @var RepositoryInterface
-     */
-    protected $repositories;
-
     public function buildForm(): FormWithRepositoryInterface
     {
         $this->addDropdown(

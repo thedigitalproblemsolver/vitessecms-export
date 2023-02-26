@@ -3,20 +3,31 @@
 namespace VitesseCms\Export\Controllers;
 
 use Thepixeldeveloper\Sitemap\Drivers\XmlWriterDriver;
-use VitesseCms\Core\AbstractController;
+use VitesseCms\Core\AbstractControllerFrontend;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
+use VitesseCms\Export\Enums\ExportTypeEnums;
 use VitesseCms\Export\Helpers\SitemapExportHelper;
 use Thepixeldeveloper\Sitemap\Output;
 use Thepixeldeveloper\Sitemap\Sitemap;
 use Thepixeldeveloper\Sitemap\SitemapIndex;
-use VitesseCms\Export\Repositories\RepositoriesInterface;
+use VitesseCms\Export\Repositories\ExportTypeRepository;
 
-class SitemapController extends AbstractController implements RepositoriesInterface
+class SitemapController extends AbstractControllerFrontend
 {
+    private ExportTypeRepository $exportTypeRepository;
+
+    public function OnConstruct()
+    {
+        parent::onConstruct();
+
+        $this->exportTypeRepository = $this->eventsManager->fire(ExportTypeEnums::GET_REPOSITORY->value,new \stdClass());
+    }
+
     public function IndexAction(): void
     {
-        $sitemaps = $this->repositories->exportType->findAll(
+        $xmlResponse = '';
+        $sitemaps = $this->exportTypeRepository->findAll(
             new FindValueIterator([new FindValue('type', SitemapExportHelper::class)])
         );
 
@@ -24,9 +35,7 @@ class SitemapController extends AbstractController implements RepositoriesInterf
             $sitemapIndex = new SitemapIndex();
             while ($sitemaps->valid()) :
                 $sitemap = $sitemaps->current();
-                $url = (new Sitemap(
-                    $this->url->getBaseUri() . 'export/index/index/' . $sitemap->getId()
-                ));
+                $url = (new Sitemap($this->urlService->getBaseUri() . 'export/index/index/' . $sitemap->getId()));
                 $url->setLastMod($sitemap->getUpdatedOn());
 
                 $sitemapIndex->add($url);
@@ -35,11 +44,9 @@ class SitemapController extends AbstractController implements RepositoriesInterf
 
             $driver = new XmlWriterDriver();
             $sitemapIndex->accept($driver);
-
-            header('Content-type: text/xml');
-            echo $driver->output();
+            $xmlResponse = $driver->output();
         endif;
 
-        $this->view->disable();
+        $this->xmlResponse($xmlResponse);
     }
 }

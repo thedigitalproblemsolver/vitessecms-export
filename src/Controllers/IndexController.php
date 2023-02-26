@@ -3,35 +3,54 @@
 namespace VitesseCms\Export\Controllers;
 
 use DateTime;
+use VitesseCms\Content\Enum\ItemEnum;
 use VitesseCms\Content\Models\Item;
-use VitesseCms\Core\AbstractController;
+use VitesseCms\Content\Models\ItemIterator;
+use VitesseCms\Content\Repositories\ItemRepository;
+use VitesseCms\Core\AbstractControllerFrontend;
+use VitesseCms\Core\Enum\CacheEnum;
 use VitesseCms\Core\Helpers\ItemHelper;
+use VitesseCms\Core\Services\CacheService;
 use VitesseCms\Database\Models\FindOrder;
 use VitesseCms\Database\Models\FindOrderIterator;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
+use VitesseCms\Export\Enums\ExportTypeEnums;
 use VitesseCms\Export\Helpers\AbstractExportHelperInterface;
 use VitesseCms\Export\Helpers\SitemapExportHelper;
 use VitesseCms\Export\Models\ExportType;
-use VitesseCms\Export\Repositories\RepositoriesInterface;
+use VitesseCms\Export\Repositories\ExportTypeRepository;
 
-class IndexController extends AbstractController implements RepositoriesInterface
+class IndexController extends AbstractControllerFrontend
 {
+    private ExportTypeRepository $exportTypeRepository;
+    private CacheService $cacheService;
+    private ItemRepository $itemRepository;
+
+    public function OnConstruct()
+    {
+        parent::onConstruct();
+
+        $this->exportTypeRepository = $this->eventsManager->fire(ExportTypeEnums::GET_REPOSITORY->value, new \stdClass());
+        $this->cacheService = $this->eventsManager->fire(CacheEnum::ATTACH_SERVICE_LISTENER, new \stdClass());
+        $this->itemRepository = $this->eventsManager->fire(ItemEnum::GET_REPOSITORY, new \stdClass());
+    }
+
     public function IndexAction(string $id): void
     {
-        $exportType = $this->repositories->exportType->getById($id);
+        $exportType = $this->exportTypeRepository->getById($id);
         if ($exportType !== null) :
             $class = $exportType->getTypeClass();
-            $exportHelper = new $class($this->configuration->getLanguage(), $this->repositories);
+            $exportHelper = new $class($this->configService->getLanguage(), $this->repositories);
 
             $content = null;
             $cacheKey = null;
             if ($exportType->hasCachingTime()) :
-                $this->cache->setTimetoLife(
+                $this->cacheService->setTimetoLife(
                     (int)(new DateTime())->modify($exportType->getCachingTime())->format('U')
                 );
-                $cacheKey = $this->cache->getCacheKey('ExportType' . $id);
-                $content = $this->cache->get($cacheKey);
+                $cacheKey = $this->cacheService->getCacheKey('ExportType' . $id);
+                $content = $this->cacheService->get($cacheKey);
             endif;
 
             if ($content === null) :
@@ -44,29 +63,27 @@ class IndexController extends AbstractController implements RepositoriesInterfac
                 endswitch;
 
                 if ($exportType->hasCachingTime()) :
-                    $this->cache->save($cacheKey, $content);
+                    $this->cacheService->save($cacheKey, $content);
                 endif;
             endif;
 
             $exportHelper->setHeaders();
             echo $content;
+            die();
         endif;
 
-        $this->view->disable();
+        $this->viewService->disable();
     }
 
-    protected function parseItemsAsIterator(
-        ExportType $exportType,
-        AbstractExportHelperInterface $exportHelper
-    ): string
+    protected function parseItemsAsIterator(ExportType $exportType, AbstractExportHelperInterface $exportHelper): string
     {
-        $datagroupItems = $this->repositories->item->getItemIdsByDatagroupForExportType(
+        $datagroupItems = $this->getItemIdsByDatagroupForExportType(
             $exportType->getDatagroup(),
             (string)$exportType->getId()
         );
 
         if (!empty($exportType->getGetChildrenFrom())) :
-            $this->repositories->item->appendRecursiveChildrenForExportType(
+            $this->itemRepository->appendRecursiveChildrenForExportType(
                 $exportType->getGetChildrenFrom(),
                 $datagroupItems
             );
@@ -79,14 +96,45 @@ class IndexController extends AbstractController implements RepositoriesInterfac
         );
     }
 
-    protected function parseItemsAsArray(
-        ExportType $exportType,
-        AbstractExportHelperInterface $exportHelper
-    ): string
+    private function getItemIdsByDatagroupForExportType(string $datagroupId, string $exportTypeId): ItemIterator
+    {
+        return $this->itemRepository->findAll(
+            new FindValueIterator([
+                new FindValue('datagroup', $datagroupId),
+                new FindValue('excludeFromExport', ['$nin' => [$exportTypeId]])
+            ]),
+            true,
+            null,
+            new FindOrderIterator([
+                new FindOrder('createdAt', -1)
+            ]),
+            ['_id']
+        );
+    }
+
+    private function appendRecursiveChildrenForExportType(string $parentId, ItemIterator $itemIterator): ItemIterator
+    {
+        $items = $this->itemRepository->findAll(
+            new FindValueIterator([new FindValue('parentId', $parentId)]),
+            true,
+            9999,
+            ['hasChildren' => true]
+        );
+        foreach ($items as $item):
+            $itemIterator->add($item);
+            if ($item->hasChildren()) :
+                $itemIterator = $this->appendRecursiveChildrenForExportType((string)$item->getId(), $itemIterator);
+            endif;
+        endforeach;
+
+        return $itemIterator;
+    }
+
+    private function parseItemsAsArray(ExportType $exportType, AbstractExportHelperInterface $exportHelper): string
     {
         $items = [[]];
         $exportHelper->preFindAll($exportType);
-        $datagroupItems = $this->repositories->item->findAll(
+        $datagroupItems = $this->itemRepository->findAll(
             new FindValueIterator([
                 new FindValue('datagroup', $exportType->getDatagroup()),
                 new FindValue('excludeFromExport', ['$nin' => [(string)$exportType->getId()]])
@@ -112,66 +160,5 @@ class IndexController extends AbstractController implements RepositoriesInterfac
         $exportHelper->setItems($items);
 
         return $exportHelper->createOutput();
-    }
-
-    /*public function ChannelEngineSyncAction(): void
-    {
-        Item::addFindOrder('channelEngineLastSyncDate', 1);
-        Item::setFindValue('outOfStock', ['$in' => ['', null, false]]);
-        Item::setFindValue('ean', ['$nin' => ['', null, false]]);
-        $item = Item::findFirst();
-
-        if ($item) :
-            if ($this->channelEngine->createOrUpdateProduct($item)) :
-                $this->log->write(
-                    $item->getId(),
-                    Item::class,
-                    'ChannelEngine <b>' . $item->_('name') . '</b> synced.'
-                );
-            endif;
-            $item->set('channelEngineLastSyncDate', time())->save();
-        endif;
-
-        die();
-    }*/
-
-    public function MailChimpSyncAction(): void
-    {
-        $datagroup = $this->setting->get('MAILCHIMP_PRODUCT_DATAGROUP');
-
-        Item::addFindOrder('mailChimpLastSyncDate.' . $this->configuration->getLanguageShort(), 1);
-        Item::setFindValue('outOfStock', ['$in' => ['', null, false]]);
-        Item::setFindValue('datagroup', $datagroup);
-        $item = Item::findFirst();
-
-        $parents = ItemHelper::getPathFromRoot($item);
-
-        if ($item) :
-            $product = $this->mailchimp->getProductById((string)$item->getId());
-            if (empty($product) || $product['status'] === 404) :
-                $this->mailchimp->createProduct($item);
-                $this->log->write(
-                    $item->getId(),
-                    Item::class,
-                    'MailChimp product created for <b>' . implode(' > ', $parents) . '</b>'
-                );
-            else :
-                $this->mailchimp->updateProduct($item);
-                $this->log->write(
-                    $item->getId(),
-                    Item::class,
-                    'MailChimp product updated for <b>' . implode(' > ', $parents) . '</b>'
-                );
-            endif;
-        endif;
-
-        $item->set(
-            'mailChimpLastSyncDate',
-            time(),
-            true,
-            $this->configuration->getLanguageShort()
-        )->save();
-
-        die();
     }
 }

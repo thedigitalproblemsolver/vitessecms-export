@@ -2,6 +2,7 @@
 
 namespace VitesseCms\Export\Forms;
 
+use Phalcon\Forms\Form;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Helpers\AmazonExportHelper;
@@ -21,11 +22,6 @@ use VitesseCms\Form\Models\Attributes;
 
 class ExportTypeForm extends AbstractFormWithRepository
 {
-    /**
-     * @var RepositoryInterface
-     */
-    protected $repositories;
-
     /**
      * @var ExportType
      */
@@ -117,10 +113,12 @@ class ExportTypeForm extends AbstractFormWithRepository
         return $this;
     }
 
-    public function setEntity($entity)
+    public function setEntity($entity): Form
     {
         $this->item = $entity;
 
         parent::setEntity($entity);
+
+        return $this;
     }
 }

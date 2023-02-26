@@ -4,7 +4,6 @@ namespace VitesseCms\Export\Controllers;
 
 use DateTime;
 use VitesseCms\Content\Enum\ItemEnum;
-use VitesseCms\Content\Models\Item;
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Content\Repositories\ItemRepository;
 use VitesseCms\Core\AbstractControllerFrontend;
@@ -83,7 +82,7 @@ class IndexController extends AbstractControllerFrontend
         );
 
         if (!empty($exportType->getGetChildrenFrom())) :
-            $this->itemRepository->appendRecursiveChildrenForExportType(
+            $this->appendRecursiveChildrenForExportType(
                 $exportType->getGetChildrenFrom(),
                 $datagroupItems
             );
@@ -92,7 +91,7 @@ class IndexController extends AbstractControllerFrontend
         return $exportHelper->createOutputByIterator(
             $datagroupItems,
             $exportType,
-            $this->url
+            $this->urlService
         );
     }
 
@@ -118,6 +117,7 @@ class IndexController extends AbstractControllerFrontend
             new FindValueIterator([new FindValue('parentId', $parentId)]),
             true,
             9999,
+            null,
             ['hasChildren' => true]
         );
         foreach ($items as $item):

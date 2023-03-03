@@ -22,19 +22,21 @@
     }
   },
   "require": {
+    "php": ">=8.1",
+    "ext-phalcon": "5.1.4",
     "thepixeldeveloper/sitemap": "^5.1",
     "lukesnowden/google-shopping-feed": "^2.0",
     "suin/php-rss-writer": "^1.6",
     "inakiabt/etsy-php": "^0.11.0",
     "vitessecms/language": "~0.3.4",
     "vitessecms/media": "~0.4.4",
-    "vitessecms/sef": "~0.3.2",
-    "vitessecms/setting": "~0.3.3",
+    "vitessecms/sef": "~0.3.3",
+    "vitessecms/setting": "~0.3.4",
     "vitessecms/core": "~0.4.8",
     "vitessecms/form": "~0.4.3",
     "vitessecms/datafield": "~0.3.3",
     "vitessecms/datagroup": "~0.4.1",
-    "vitessecms/communication": "~0.4.3",
+    "vitessecms/communication": "~0.4.4",
     "vitessecms/database": "~0.3.4"
   }
 }

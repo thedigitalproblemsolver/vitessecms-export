@@ -30,7 +30,7 @@
     "inakiabt/etsy-php": "^0.11.0",
     "vitessecms/language": "^1.0.0",
     "vitessecms/media": "^1.1.0",
-    "vitessecms/sef": "^1.0.3",
+    "vitessecms/sef": "^1.0.4",
     "vitessecms/setting": "^1.0.1",
     "vitessecms/core": "^1.2.0",
     "vitessecms/form": "^1.0.0",

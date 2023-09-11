@@ -5,21 +5,17 @@ namespace VitesseCms\Export\Listeners\Controllers;
 use Phalcon\Events\Event;
 use VitesseCms\Admin\AbstractAdminController;
 use VitesseCms\Admin\Forms\AdminlistFormInterface;
+use VitesseCms\Export\Controllers\AdmincontentController;
 
 class AdmincontentControllerListener
 {
     public function adminListFilter(
         Event $event,
-        AbstractAdminController $controller,
+        AdmincontentController $controller,
         AdminlistFormInterface $form
-    ): string
+    ): void
     {
         $form->addText('%CORE_NAME%', 'filter[name]');
         $form->addPublishedField($form);
-
-        return $form->renderForm(
-            $controller->getLink() . '/' . $controller->router->getActionName(),
-            'adminFilter'
-        );
     }
 }

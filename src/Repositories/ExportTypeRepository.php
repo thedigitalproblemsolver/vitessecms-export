@@ -24,9 +24,23 @@ class ExportTypeRepository
         return null;
     }
 
-    public function findAll(?FindValueIterator $findValues = null): ExportTypeIterator
+    public function findAll(
+        ?FindValueIterator $findValues = null,
+        bool $hideUnpublished = true,
+        ?int $limit = null,
+        ?FindOrderIterator $findOrders = null
+    ): ExportTypeIterator
     {
+        ExportType::setFindPublished($hideUnpublished);
+        if ($limit !== null) :
+            ExportType::setFindLimit($limit);
+        endif;
+        if ($findOrders === null):
+            $findOrders = new FindOrderIterator([new FindOrder('name', 1)]);
+        endif;
+
         $this->parseFindValues($findValues);
+        $this->parseFindOrders($findOrders);
 
         return new ExportTypeIterator(ExportType::findAll());
     }
@@ -42,6 +56,20 @@ class ExportTypeRepository
                     $findValue->getType()
                 );
                 $findValues->next();
+            endwhile;
+        endif;
+    }
+
+    protected function parseFindOrders(?FindOrderIterator $findOrders = null): void
+    {
+        if ($findOrders !== null) :
+            while ($findOrders->valid()) :
+                $findOrder = $findOrders->current();
+                ExportType::addFindOrder(
+                    $findOrder->getKey(),
+                    $findOrder->getOrder()
+                );
+                $findOrders->next();
             endwhile;
         endif;
     }

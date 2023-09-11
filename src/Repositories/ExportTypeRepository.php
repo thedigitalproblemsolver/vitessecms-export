@@ -4,6 +4,7 @@ namespace VitesseCms\Export\Repositories;
 
 use VitesseCms\Content\Models\Item;
 use VitesseCms\Content\Models\ItemIterator;
+use VitesseCms\Database\Models\FindOrder;
 use VitesseCms\Database\Models\FindOrderIterator;
 use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Models\ExportType;

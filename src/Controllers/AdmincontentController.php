@@ -51,8 +51,6 @@ class AdmincontentController  extends AbstractControllerAdmin implements
         parent::onConstruct();
 
         $this->exportTypeRepository = $this->eventsManager->fire(ExportTypeEnums::GET_REPOSITORY->value, new \stdClass());
-        //$this->class = ExportType::class;
-        //$this->classForm = ExportTypeForm::class;
     }
 
     public function getModel(string $id): ?AbstractCollection

@@ -75,24 +75,4 @@ class ExportType extends AbstractCollection
 
         return 'VitesseCms\\Field\\Models\\' . $this->type;
     }
-
-    public function afterFetch()
-    {
-        parent::afterFetch();
-
-        if (AdminUtil::isAdminPage()) :
-            //TODO move to mustache
-            $this->adminListName = '<a 
-                href="/export/index/index/' . (string)$this->getId() . '" 
-                class="fa fa-external-link"
-                target="_blank"
-                ></a> 
-                <a 
-                    href="/admin/export/admincontent/edit/' . (string)$this->getId() . '"
-                    class="openmodal"
-                >' .
-                $this->getNameField() .
-                '</a>';
-        endif;
-    }
 }

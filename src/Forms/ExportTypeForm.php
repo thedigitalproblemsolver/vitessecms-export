@@ -3,6 +3,8 @@
 namespace VitesseCms\Export\Forms;
 
 use Phalcon\Forms\Form;
+use VitesseCms\Admin\Forms\AdminlistFormInterface;
+use VitesseCms\Admin\Interfaces\AdminModelFormInterface;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Helpers\AmazonExportHelper;
@@ -15,21 +17,17 @@ use VitesseCms\Export\Helpers\SitemapExportHelper;
 use VitesseCms\Export\Helpers\TradetrackerExportHelper;
 use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\RepositoryInterface;
+use VitesseCms\Form\AbstractForm;
 use VitesseCms\Form\AbstractFormWithRepository;
 use VitesseCms\Form\Helpers\ElementHelper;
 use VitesseCms\Form\Interfaces\FormWithRepositoryInterface;
 use VitesseCms\Form\Models\Attributes;
 
-class ExportTypeForm extends AbstractFormWithRepository
+class ExportTypeForm extends AbstractForm implements AdminModelFormInterface
 {
-    /**
-     * @var ExportType
-     */
-    protected $item;
-
-    public function buildForm(): FormWithRepositoryInterface
+    public function buildForm(): void
     {
-        $this->addText('%CORE_NAME%', 'name', (new Attributes())->setRequired(true))
+        $this->addText('%CORE_NAME%', 'name', (new Attributes())->setRequired()->setMultilang())
             ->addDropdown(
                 '%ADMIN_DATAGROUP%',
                 'datagroup',
@@ -38,9 +36,9 @@ class ExportTypeForm extends AbstractFormWithRepository
                 ))
             );
 
-        if ($this->item->getDatagroup() !== '') :
+        if ($this->entity->getDatagroup() !== '') :
             $items = $this->repositories->item->findAll(new FindValueIterator(
-                [new FindValue('datagroup', $this->item->getDatagroup())]
+                [new FindValue('datagroup', $this->entity->getDatagroup())]
             ),
                 true,
                 999
@@ -86,13 +84,13 @@ class ExportTypeForm extends AbstractFormWithRepository
                 )
         );
 
-        if ($this->item !== null && $this->item->hasType()) :
+        if ($this->entity !== null && $this->entity->hasType()) :
             //TODO move to listener
-            $object = $this->item->getTypeClass();
-            $object::buildAdminForm($this, $this->item, $this->repositories);
+            $object = $this->entity->getTypeClass();
+            $object::buildAdminForm($this, $this->entity, $this->repositories);
         endif;
 
-        if ($this->item->getId()) :
+        if ($this->entity->getId()) :
             $languages = $this->repositories->language->findAll();
             if ($languages->count() > 0) :
                 $this->addHtml(
@@ -109,16 +107,5 @@ class ExportTypeForm extends AbstractFormWithRepository
         endif;
 
         $this->addSubmitButton('%CORE_SAVE%');
-
-        return $this;
-    }
-
-    public function setEntity($entity): Form
-    {
-        $this->item = $entity;
-
-        parent::setEntity($entity);
-
-        return $this;
     }
 }

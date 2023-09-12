@@ -27,7 +27,7 @@ use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\ExportTypeRepository;
 use VitesseCms\Export\Repositories\RepositoryInterface;
 
-class AdmincontentController  extends AbstractControllerAdmin implements
+class AdmincontentController extends AbstractControllerAdmin implements
     AdminModelPublishableInterface,
     AdminModelListInterface,
     AdminModelEditableInterface,

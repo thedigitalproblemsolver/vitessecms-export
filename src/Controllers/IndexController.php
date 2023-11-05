@@ -1,8 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
 
 use DateTime;
+use stdClass;
 use VitesseCms\Content\Enum\ItemEnum;
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Content\Repositories\ItemRepository;
@@ -30,9 +32,12 @@ class IndexController extends AbstractControllerFrontend
     {
         parent::onConstruct();
 
-        $this->exportTypeRepository = $this->eventsManager->fire(ExportTypeEnums::GET_REPOSITORY->value, new \stdClass());
-        $this->cacheService = $this->eventsManager->fire(CacheEnum::ATTACH_SERVICE_LISTENER, new \stdClass());
-        $this->itemRepository = $this->eventsManager->fire(ItemEnum::GET_REPOSITORY, new \stdClass());
+        $this->exportTypeRepository = $this->eventsManager->fire(
+            ExportTypeEnums::GET_REPOSITORY->value,
+            new stdClass()
+        );
+        $this->cacheService = $this->eventsManager->fire(CacheEnum::ATTACH_SERVICE_LISTENER, new stdClass());
+        $this->itemRepository = $this->eventsManager->fire(ItemEnum::GET_REPOSITORY, new stdClass());
     }
 
     public function IndexAction(string $id): void

@@ -1,7 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
 
+use ArrayIterator;
+use stdClass;
 use VitesseCms\Admin\Interfaces\AdminModelAddableInterface;
 use VitesseCms\Admin\Interfaces\AdminModelCopyableInterface;
 use VitesseCms\Admin\Interfaces\AdminModelDeletableInterface;
@@ -25,9 +29,8 @@ use VitesseCms\Export\Enums\ExportTypeEnums;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\ExportTypeRepository;
-use VitesseCms\Export\Repositories\RepositoryInterface;
 
-class AdmincontentController  extends AbstractControllerAdmin implements
+class AdmincontentController extends AbstractControllerAdmin implements
     AdminModelPublishableInterface,
     AdminModelListInterface,
     AdminModelEditableInterface,
@@ -35,22 +38,24 @@ class AdmincontentController  extends AbstractControllerAdmin implements
     AdminModelAddableInterface,
     AdminModelCopyableInterface
 {
-    use TraitAdminModelPublishable,
-        TraitAdminModelList,
-        TraitAdminModelEditable,
-        TraitAdminModelSave,
-        TraitAdminModelDeletable,
-        TraitAdminModelAddable,
-        TraitAdminModelCopyable
-        ;
+    use TraitAdminModelAddable;
+    use TraitAdminModelCopyable;
+    use TraitAdminModelDeletable;
+    use TraitAdminModelEditable;
+    use TraitAdminModelList;
+    use TraitAdminModelPublishable;
+    use TraitAdminModelSave;
 
     private readonly ExportTypeRepository $exportTypeRepository;
 
     public function onConstruct()
     {
         parent::onConstruct();
-
-        $this->exportTypeRepository = $this->eventsManager->fire(ExportTypeEnums::GET_REPOSITORY->value, new \stdClass());
+        
+        $this->exportTypeRepository = $this->eventsManager->fire(
+            ExportTypeEnums::GET_REPOSITORY->value,
+            new stdClass()
+        );
     }
 
     public function getModel(string $id): ?AbstractCollection
@@ -61,7 +66,7 @@ class AdmincontentController  extends AbstractControllerAdmin implements
         };
     }
 
-    public function getModelList( ?FindValueIterator $findValueIterator): \ArrayIterator
+    public function getModelList(?FindValueIterator $findValueIterator): ArrayIterator
     {
         return $this->exportTypeRepository->findAll(
             $findValueIterator,

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
@@ -28,7 +29,6 @@ use VitesseCms\Export\Enums\ExportTypeEnums;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\ExportTypeRepository;
-use VitesseCms\Export\Repositories\RepositoryInterface;
 
 class AdmincontentController extends AbstractControllerAdmin implements
     AdminModelPublishableInterface,
@@ -51,7 +51,7 @@ class AdmincontentController extends AbstractControllerAdmin implements
     public function onConstruct()
     {
         parent::onConstruct();
-
+        
         $this->exportTypeRepository = $this->eventsManager->fire(
             ExportTypeEnums::GET_REPOSITORY->value,
             new stdClass()

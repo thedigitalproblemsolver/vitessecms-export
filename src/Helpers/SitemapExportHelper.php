@@ -1,14 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace VitesseCms\Export\Helpers;
 
 use Thepixeldeveloper\Sitemap\Drivers\XmlWriterDriver;
-use Thepixeldeveloper\Sitemap\Output;
 use Thepixeldeveloper\Sitemap\Url;
 use Thepixeldeveloper\Sitemap\Urlset;
+use VitesseCms\Content\Models\Item;
 use VitesseCms\Content\Models\ItemIterator;
 use VitesseCms\Core\Services\UrlService;
-use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Export\Forms\ExportTypeForm;
 use VitesseCms\Export\Models\ExportType;
 use VitesseCms\Export\Repositories\RepositoryInterface;
@@ -21,73 +22,81 @@ use VitesseCms\Form\Models\Attributes;
  */
 class SitemapExportHelper extends AbstractExportHelper
 {
-    public static function buildAdminForm(ExportTypeForm $form, ExportType $item, RepositoryInterface $repositories): void
-    {
+    public static function buildAdminForm(
+        ExportTypeForm $form,
+        ExportType $item,
+        RepositoryInterface $repositories
+    ): void {
         $form->addDropdown(
             '%EXPORT_SITEMAP_CHANGE_FREQUENCY%',
             'frequency',
-            (new Attributes())->setRequired(true)->setOptions(ElementHelper::arrayToSelectOptions([
-                'always' => '%EXPORT_SITEMAP_ALWAYS%',
-                'hourly' => '%EXPORT_SITEMAP_HOURLY%',
-                'daily' => '%EXPORT_SITEMAP_DAILY%',
-                'weekly' => '%EXPORT_SITEMAP_WEEKLY%',
-                'monthly' => '%EXPORT_SITEMAP_MONTHLY%',
-                'yearly' => '%EXPORT_SITEMAP_YEARLY%',
-                'never' => '%EXPORT_SITEMAP_NEVER%',
-            ]))
+            (new Attributes())->setRequired(true)->setOptions(
+                ElementHelper::arrayToSelectOptions([
+                    'always' => '%EXPORT_SITEMAP_ALWAYS%',
+                    'hourly' => '%EXPORT_SITEMAP_HOURLY%',
+                    'daily' => '%EXPORT_SITEMAP_DAILY%',
+                    'weekly' => '%EXPORT_SITEMAP_WEEKLY%',
+                    'monthly' => '%EXPORT_SITEMAP_MONTHLY%',
+                    'yearly' => '%EXPORT_SITEMAP_YEARLY%',
+                    'never' => '%EXPORT_SITEMAP_NEVER%',
+                ])
+            )
         )->addDropdown(
             '%EXPORT_SITEMAP_PRIORITY%',
             'priority',
-            (new Attributes())->setRequired(true)->setOptions(ElementHelper::arrayToSelectOptions([
-                '0.1' => '%EXPORT_SITEMAP_NOT_IMPORTANT%',
-                '0.5' => '%EXPORT_SITEMAP_IMPORTANT%',
-                '1' => '%EXPORT_SITEMAP_VERY_IMPORTANT%'
-            ]))
+            (new Attributes())->setRequired(true)->setOptions(
+                ElementHelper::arrayToSelectOptions([
+                    '0.1' => '%EXPORT_SITEMAP_NOT_IMPORTANT%',
+                    '0.5' => '%EXPORT_SITEMAP_IMPORTANT%',
+                    '1' => '%EXPORT_SITEMAP_VERY_IMPORTANT%'
+                ])
+            )
         );
     }
 
     public function createOutput(): string
     {
         $urlSet = new Urlset();
-        /** @var AbstractCollection $item */
-        foreach ($this->items as $items) :
-            foreach ($items as $item) :
-                $url = (new Url($this->url->getBaseUri() . $item->_('slug')))
-                    ->setLastMod($item->_('updatedAt'))
-                    ->setChangeFreq($this->exportType->_('frequency'))
-                    ->setPriority($this->exportType->_('priority'));
+        foreach ($this->items as $items) {
+            /** @var Item $item */
+            foreach ($items as $item) {
+                $this->addItemToSitemap($item, $this->exportType, $this->url, $urlSet);
+            }
+        }
 
-                $urlSet->addUrl($url);
-            endforeach;
-        endforeach;
+        return $this->createXmlOutput($urlSet);
+    }
 
-        return (new Output())->getOutput($urlSet);
+    private function addItemToSitemap(Item $item, ExportType $exportType, UrlService $urlService, urlSet $urlSet): void
+    {
+        $url = new Url($urlService->getBaseUri() . $item->getSlug());
+        $url->setLastMod($item->getUpdatedOn() ?? $item->getCreateDate());
+        $url->setChangeFreq($exportType->_('frequency'));
+        $url->setPriority($exportType->_('priority'));
+
+        $urlSet->add($url);
+    }
+
+    private function createXmlOutput(Urlset $urlset): string
+    {
+        $driver = new XmlWriterDriver();
+        $urlset->accept($driver);
+
+        return $driver->output();
     }
 
     public function createOutputByIterator(
         ItemIterator $itemIterator,
         ExportType $exportType,
         UrlService $urlService
-    ): string
-    {
+    ): string {
         $urlSet = new Urlset();
-        while ($itemIterator->valid()):
-            $itemId = $itemIterator->current();
-            $item = $this->repositories->item->getById((string)$itemId->getId(), true, false);
-
-            $url = new Url($urlService->getBaseUri() . $item->getSlug());
-            $url->setLastMod($item->getUpdatedOn() ?? $item->getCreateDate());
-            $url->setChangeFreq($exportType->_('frequency'));
-            $url->setPriority($exportType->_('priority'));
-
-            $urlSet->add($url);
+        while ($itemIterator->valid()) {
+            $this->addItemToSitemap($itemIterator->current(), $exportType, $urlService, $urlSet);
             $itemIterator->next();
-        endwhile;
+        }
 
-        $driver = new XmlWriterDriver();
-        $urlSet->accept($driver);
-
-        return $driver->output();
+        return $this->createXmlOutput($urlSet);
     }
 
     public function setHeaders(): void

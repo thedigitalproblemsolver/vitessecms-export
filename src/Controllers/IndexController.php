@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace VitesseCms\Export\Controllers;
@@ -43,38 +44,35 @@ class IndexController extends AbstractControllerFrontend
     public function IndexAction(string $id): void
     {
         $exportType = $this->exportTypeRepository->getById($id);
-        if ($exportType !== null) :
+        if ($exportType !== null) {
             $class = $exportType->getTypeClass();
             $exportHelper = new $class($this->configService->getLanguage(), $this->repositories);
 
             $content = null;
             $cacheKey = null;
-            if ($exportType->hasCachingTime()) :
+            if ($exportType->hasCachingTime()) {
                 $this->cacheService->setTimetoLife(
                     (int)(new DateTime())->modify($exportType->getCachingTime())->format('U')
                 );
                 $cacheKey = $this->cacheService->getCacheKey('ExportType' . $id);
                 $content = $this->cacheService->get($cacheKey);
-            endif;
+            }
 
-            if ($content === null) :
-                switch ($exportType->getType()):
-                    case SitemapExportHelper::class:
-                        $content = $this->parseItemsAsIterator($exportType, $exportHelper);
-                        break;
-                    default:
-                        $content = $this->parseItemsAsArray($exportType, $exportHelper);
-                endswitch;
+            if ($content === null) {
+                $content = match ($exportType->getType()) {
+                    SitemapExportHelper::class => $this->parseItemsAsIterator($exportType, $exportHelper),
+                    default => $this->parseItemsAsArray($exportType, $exportHelper),
+                };
 
-                if ($exportType->hasCachingTime()) :
+                if ($exportType->hasCachingTime()) {
                     $this->cacheService->save($cacheKey, $content);
-                endif;
-            endif;
+                }
+            }
 
             $exportHelper->setHeaders();
             echo $content;
             die();
-        endif;
+        }
 
         $this->viewService->disable();
     }
@@ -86,12 +84,12 @@ class IndexController extends AbstractControllerFrontend
             (string)$exportType->getId()
         );
 
-        if (!empty($exportType->getGetChildrenFrom())) :
+        if (!empty($exportType->getGetChildrenFrom())) {
             $this->appendRecursiveChildrenForExportType(
                 $exportType->getGetChildrenFrom(),
                 $datagroupItems
             );
-        endif;
+        }
 
         return $exportHelper->createOutputByIterator(
             $datagroupItems,
@@ -111,26 +109,25 @@ class IndexController extends AbstractControllerFrontend
             null,
             new FindOrderIterator([
                 new FindOrder('createdAt', -1)
-            ]),
-            ['_id']
+            ])
         );
     }
 
     private function appendRecursiveChildrenForExportType(string $parentId, ItemIterator $itemIterator): ItemIterator
     {
         $items = $this->itemRepository->findAll(
-            new FindValueIterator([new FindValue('parentId', $parentId)]),
-            true,
-            9999,
-            null,
-            ['hasChildren' => true]
+            new FindValueIterator([
+                new FindValue('parentId', $parentId),
+                new FindValue('hasChildren', true)
+            ])
         );
-        foreach ($items as $item):
+
+        foreach ($items as $item) {
             $itemIterator->add($item);
-            if ($item->hasChildren()) :
+            if ($item->hasChildren()) {
                 $itemIterator = $this->appendRecursiveChildrenForExportType((string)$item->getId(), $itemIterator);
-            endif;
-        endforeach;
+            }
+        }
 
         return $itemIterator;
     }
@@ -149,16 +146,16 @@ class IndexController extends AbstractControllerFrontend
             new FindOrderIterator([new FindOrder('createdAt', -1)])
         );
 
-        if ($exportType->hasGetChildrenFrom()) :
+        if ($exportType->hasGetChildrenFrom()) {
             $datagroupItems = array_merge(
                 $datagroupItems,
                 ItemHelper::getRecursiveChildren($exportType->getGetChildrenFrom())
             );
-        endif;
+        }
 
-        if ($datagroupItems) :
+        if ($datagroupItems) {
             $items[] = $datagroupItems;
-        endif;
+        }
         $items = array_merge($items);
 
         $exportHelper->setExportType($exportType);

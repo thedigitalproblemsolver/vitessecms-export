@@ -57,7 +57,7 @@ class IndexController extends AbstractControllerFrontend
                 $cacheKey = $this->cacheService->getCacheKey('ExportType' . $id);
                 $content = $this->cacheService->get($cacheKey);
             }
-
+            $content = null;
             if ($content === null) {
                 $content = match ($exportType->getType()) {
                     SitemapExportHelper::class => $this->parseItemsAsIterator($exportType, $exportHelper),
@@ -79,15 +79,16 @@ class IndexController extends AbstractControllerFrontend
 
     protected function parseItemsAsIterator(ExportType $exportType, AbstractExportHelperInterface $exportHelper): string
     {
-        $datagroupItems = $this->getItemIdsByDatagroupForExportType(
-            $exportType->getDatagroup(),
-            (string)$exportType->getId()
-        );
-
         if (!empty($exportType->getGetChildrenFrom())) {
+            $datagroupItems = new ItemIterator([]);
             $this->appendRecursiveChildrenForExportType(
                 $exportType->getGetChildrenFrom(),
                 $datagroupItems
+            );
+        } else {
+            $datagroupItems = $this->getItemIdsByDatagroupForExportType(
+                $exportType->getDatagroup(),
+                (string)$exportType->getId()
             );
         }
 
@@ -95,21 +96,6 @@ class IndexController extends AbstractControllerFrontend
             $datagroupItems,
             $exportType,
             $this->urlService
-        );
-    }
-
-    private function getItemIdsByDatagroupForExportType(string $datagroupId, string $exportTypeId): ItemIterator
-    {
-        return $this->itemRepository->findAll(
-            new FindValueIterator([
-                new FindValue('datagroup', $datagroupId),
-                new FindValue('excludeFromExport', ['$nin' => [$exportTypeId]])
-            ]),
-            true,
-            null,
-            new FindOrderIterator([
-                new FindOrder('createdAt', -1)
-            ])
         );
     }
 
@@ -130,6 +116,21 @@ class IndexController extends AbstractControllerFrontend
         }
 
         return $itemIterator;
+    }
+
+    private function getItemIdsByDatagroupForExportType(string $datagroupId, string $exportTypeId): ItemIterator
+    {
+        return $this->itemRepository->findAll(
+            new FindValueIterator([
+                new FindValue('datagroup', $datagroupId),
+                new FindValue('excludeFromExport', ['$nin' => [$exportTypeId]])
+            ]),
+            true,
+            null,
+            new FindOrderIterator([
+                new FindOrder('createdAt', -1)
+            ])
+        );
     }
 
     private function parseItemsAsArray(ExportType $exportType, AbstractExportHelperInterface $exportHelper): string

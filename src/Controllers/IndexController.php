@@ -79,15 +79,16 @@ class IndexController extends AbstractControllerFrontend
 
     protected function parseItemsAsIterator(ExportType $exportType, AbstractExportHelperInterface $exportHelper): string
     {
-        $datagroupItems = $this->getItemIdsByDatagroupForExportType(
-            $exportType->getDatagroup(),
-            (string)$exportType->getId()
-        );
-
         if (!empty($exportType->getGetChildrenFrom())) {
+            $datagroupItems = new ItemIterator([]);
             $this->appendRecursiveChildrenForExportType(
                 $exportType->getGetChildrenFrom(),
                 $datagroupItems
+            );
+        } else {
+            $datagroupItems = $this->getItemIdsByDatagroupForExportType(
+                $exportType->getDatagroup(),
+                (string)$exportType->getId()
             );
         }
 
@@ -96,6 +97,22 @@ class IndexController extends AbstractControllerFrontend
             $exportType,
             $this->urlService
         );
+    }
+
+    private function appendRecursiveChildrenForExportType(string $parentId, ItemIterator $itemIterator): ItemIterator
+    {
+        $items = $this->itemRepository->findAll(new FindValueIterator([new FindValue('parentId', $parentId)]));
+
+        foreach ($items as $item) {
+            $itemIterator->add($item);
+            if ($item->hasChildren()) {
+                $itemIterator = $this->appendRecursiveChildrenForExportType((string)$item->getId(), $itemIterator);
+            }
+        }
+
+        $itemIterator->add($this->itemRepository->getById($parentId));
+
+        return $itemIterator;
     }
 
     private function getItemIdsByDatagroupForExportType(string $datagroupId, string $exportTypeId): ItemIterator
@@ -111,25 +128,6 @@ class IndexController extends AbstractControllerFrontend
                 new FindOrder('createdAt', -1)
             ])
         );
-    }
-
-    private function appendRecursiveChildrenForExportType(string $parentId, ItemIterator $itemIterator): ItemIterator
-    {
-        $items = $this->itemRepository->findAll(
-            new FindValueIterator([
-                new FindValue('parentId', $parentId),
-                new FindValue('hasChildren', true)
-            ])
-        );
-
-        foreach ($items as $item) {
-            $itemIterator->add($item);
-            if ($item->hasChildren()) {
-                $itemIterator = $this->appendRecursiveChildrenForExportType((string)$item->getId(), $itemIterator);
-            }
-        }
-
-        return $itemIterator;
     }
 
     private function parseItemsAsArray(ExportType $exportType, AbstractExportHelperInterface $exportHelper): string

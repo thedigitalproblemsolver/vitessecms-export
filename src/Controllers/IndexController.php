@@ -57,7 +57,7 @@ class IndexController extends AbstractControllerFrontend
                 $cacheKey = $this->cacheService->getCacheKey('ExportType' . $id);
                 $content = $this->cacheService->get($cacheKey);
             }
-            $content = null;
+
             if ($content === null) {
                 $content = match ($exportType->getType()) {
                     SitemapExportHelper::class => $this->parseItemsAsIterator($exportType, $exportHelper),
@@ -101,12 +101,7 @@ class IndexController extends AbstractControllerFrontend
 
     private function appendRecursiveChildrenForExportType(string $parentId, ItemIterator $itemIterator): ItemIterator
     {
-        $items = $this->itemRepository->findAll(
-            new FindValueIterator([
-                new FindValue('parentId', $parentId),
-                new FindValue('hasChildren', true)
-            ])
-        );
+        $items = $this->itemRepository->findAll(new FindValueIterator([new FindValue('parentId', $parentId)]));
 
         foreach ($items as $item) {
             $itemIterator->add($item);
@@ -114,6 +109,8 @@ class IndexController extends AbstractControllerFrontend
                 $itemIterator = $this->appendRecursiveChildrenForExportType((string)$item->getId(), $itemIterator);
             }
         }
+
+        $itemIterator->add($this->itemRepository->getById($parentId));
 
         return $itemIterator;
     }

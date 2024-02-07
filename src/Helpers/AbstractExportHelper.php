@@ -1,14 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace VitesseCms\Export\Helpers;
 
 use DateTime;
 use VitesseCms\Content\Fields\Model;
 use VitesseCms\Content\Models\Item;
-use VitesseCms\Content\Models\ItemIterator;
-use VitesseCms\Core\Services\UrlService;
-use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Core\AbstractInjectable;
+use VitesseCms\Database\AbstractCollection;
 use VitesseCms\Database\Models\FindValue;
 use VitesseCms\Database\Models\FindValueIterator;
 use VitesseCms\Export\Forms\ExportTypeForm;
@@ -17,42 +17,17 @@ use VitesseCms\Export\Repositories\RepositoryInterface;
 use VitesseCms\Form\Helpers\ElementHelper;
 use VitesseCms\Form\Models\Attributes;
 use VitesseCms\Language\Models\Language;
+
 use function is_array;
 
 abstract class AbstractExportHelper extends AbstractInjectable implements AbstractExportHelperInterface
 {
-    /**
-     * @var array
-     */
-    protected static $adminFormFields = [];
-    /**
-     * @var array
-     */
-    protected $fields;
-    /**
-     * @var array
-     */
-    protected $items;
-
-    /**
-     * @var ItemIterator
-     */
-    protected $itemIterator;
-
-    /**
-     * @var Language
-     */
-    protected $language;
-
-    /**
-     * @var ExportType
-     */
-    protected $exportType;
-
-    /**
-     * @var RepositoryInterface
-     */
-    protected $repositories;
+    protected static array $adminFormFields = [];
+    protected array $fields;
+    protected array $items;
+    protected Language $language;
+    protected AbstractCollection $exportType;
+    protected RepositoryInterface $repositories;
 
     public function __construct(Language $language, RepositoryInterface $repositories)
     {
@@ -66,8 +41,7 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
         ExportTypeForm $form,
         ExportType $item,
         RepositoryInterface $repositories
-    ): void
-    {
+    ): void {
         if (
             $item->getDatagroup() !== ''
             && count($item->getType()::$adminFormFields) > 0
@@ -88,7 +62,9 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
                 $form->addDropdown(
                     '%ADMIN_DATAFIELD% ' . ucfirst($exportField),
                     'exportDatafield_' . $exportField,
-                    (new Attributes())->setInputClass('select2')->setOptions(ElementHelper::arrayToSelectOptions($datafieldOptions))
+                    (new Attributes())->setInputClass('select2')->setOptions(
+                        ElementHelper::arrayToSelectOptions($datafieldOptions)
+                    )
                 )->addText(
                     '%CORE_OR%',
                     'exportField_' . $exportField,
@@ -119,11 +95,6 @@ abstract class AbstractExportHelper extends AbstractInjectable implements Abstra
     public function setExportType(AbstractCollection $exportType): void
     {
         $this->exportType = $exportType;
-    }
-
-    public function createOutputByIterator(ItemIterator $itemIterator, ExportType $exportType, UrlService $url): string
-    {
-        // TODO: Implement createOutputByIterator() method.
     }
 
     protected function getItemValue(AbstractCollection $item, string $fieldName): string

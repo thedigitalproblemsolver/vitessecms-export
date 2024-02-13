@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace VitesseCms\Export\Helpers;
 
+use Phalcon\Http\Request;
 use Thepixeldeveloper\Sitemap\Drivers\XmlWriterDriver;
+use Thepixeldeveloper\Sitemap\Sitemap;
+use Thepixeldeveloper\Sitemap\SitemapIndex;
 use Thepixeldeveloper\Sitemap\Url;
 use Thepixeldeveloper\Sitemap\Urlset;
 use VitesseCms\Content\Models\Item;
@@ -22,6 +25,8 @@ use VitesseCms\Form\Models\Attributes;
  */
 class SitemapExportHelper extends AbstractExportHelper
 {
+    private int $limit = 3000;
+
     public static function buildAdminForm(
         ExportTypeForm $form,
         ExportType $item,
@@ -90,6 +95,20 @@ class SitemapExportHelper extends AbstractExportHelper
         ExportType $exportType,
         UrlService $urlService
     ): string {
+        if ($itemIterator->count() < $this->limit) {
+            return $this->createUrlSet($itemIterator, $exportType, $urlService);
+        }
+
+        $request = new Request();
+        if ($request->has('offset')) {
+            return $this->createUrlSubSet($itemIterator, (int)$request->get('offset'), $exportType, $urlService);
+        }
+
+        return $this->createSitemapIndex($itemIterator->count(), $exportType, $urlService);
+    }
+
+    private function createUrlSet(\Iterator $itemIterator, ExportType $exportType, UrlService $urlService): string
+    {
         $urlSet = new Urlset();
         while ($itemIterator->valid()) {
             $this->addItemToSitemap($itemIterator->current(), $exportType, $urlService, $urlSet);
@@ -97,6 +116,38 @@ class SitemapExportHelper extends AbstractExportHelper
         }
 
         return $this->createXmlOutput($urlSet);
+    }
+
+    private function createUrlSubSet(
+        ItemIterator $itemIterator,
+        int $offset,
+        ExportType $exportType,
+        UrlService $urlService
+    ): string {
+        $urlSet = new Urlset();
+        for ($i = $offset; $i <= ($offset + $this->limit); $i++) {
+            $itemIterator->seek($i);
+            $this->addItemToSitemap($itemIterator->current(), $exportType, $urlService, $urlSet);
+        }
+
+        return $this->createXmlOutput($urlSet);
+    }
+
+    private function createSitemapIndex(int $itemCount, ExportType $exportType, UrlService $urlService): string
+    {
+        $sitemapIndex = new SitemapIndex();
+        $baseUrl = $urlService->getBaseUri() . 'export/index/index/' . $exportType->getId();
+
+        for ($offset = 0; $offset <= $itemCount; $offset += $this->limit) {
+            $url = (new Sitemap($baseUrl . '?offset=' . $offset));
+            $url->setLastMod($exportType->getUpdatedOn());
+            $sitemapIndex->add($url);
+        }
+
+        $driver = new XmlWriterDriver();
+        $sitemapIndex->accept($driver);
+
+        return $driver->output();
     }
 
     public function setHeaders(): void
